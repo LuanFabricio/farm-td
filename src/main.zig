@@ -1,9 +1,6 @@
 const std = @import("std");
 
-const raylib = @cImport({
-    @cInclude("/usr/local/include/raylib.h");
-    @cInclude("/usr/local/include/raymath.h");
-});
+const utils = @import("utils/utils.zig");
 
 const Render = @import("render/render.zig").Render;
 const input = @import("input/input.zig");
@@ -17,19 +14,26 @@ pub fn main() !void {
     var render = Render.init();
     defer render.deinit();
 
-    var x: f32 = 42;
-    var y: f32 = 42;
-    const w: i32 = 128;
-    const h: i32 = 128;
-    const color = [4]u8{ 0xFF, 0x19, 0x19, 0xFF };
+    var rect = utils.Rectangle{
+        .x = 42,
+        .y = 42,
+        .w = 128,
+        .h = 128,
+    };
+    const color = utils.Color{
+        .r = 0x19,
+        .g = 0x19,
+        .b = 0xff,
+        .a = 0xff,
+    };
 
     while (render.shouldRender()) {
         render.beginDraw();
         defer render.endDraw();
 
-        render.drawRectangle(@intFromFloat(x), @intFromFloat(y), w, h, color);
+        render.drawRectangleRect(rect, color);
 
-        const speed = w;
+        const speed = rect.w;
         var ySpeed: f32 = 0;
         var xSpeed: f32 = 0;
 
@@ -47,7 +51,7 @@ pub fn main() !void {
         }
 
         const frameTime = render.getFrameTime();
-        x += xSpeed * frameTime;
-        y += ySpeed * frameTime;
+        rect.x += xSpeed * frameTime;
+        rect.y += ySpeed * frameTime;
     }
 }

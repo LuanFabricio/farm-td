@@ -1,7 +1,4 @@
-const raylib = @cImport({
-    @cInclude("/usr/local/include/raylib.h");
-    @cInclude("/usr/local/include/raymath.h");
-});
+const Raylib = @import("../utils/utils.zig").Raylib;
 
 pub const KeyEnum = enum(i32) {
     Up,
@@ -12,23 +9,23 @@ pub const KeyEnum = enum(i32) {
 
 pub const Input = struct {
     pub fn isKeyPressed(keyCode: KeyEnum) bool {
-        const raylibKeyCode = Input.keyEnumToRaylib(keyCode);
-        return raylib.IsKeyPressed(raylibKeyCode);
+        const RaylibKeyCode = Input.keyEnumToRaylib(keyCode);
+        return Raylib.IsKeyPressed(RaylibKeyCode);
     }
 
     pub fn isKeyDown(keyCode: KeyEnum) bool {
-        const raylibKeyCode = Input.keyEnumToRaylib(keyCode);
-        return raylib.IsKeyDown(raylibKeyCode);
+        const RaylibKeyCode = Input.keyEnumToRaylib(keyCode);
+        return Raylib.IsKeyDown(RaylibKeyCode);
     }
 
     fn keyEnumToRaylib(keyCode: KeyEnum) i32 {
-        const raylibKeyCode = switch (keyCode) {
-            .Up => raylib.KEY_W,
-            .Down => raylib.KEY_S,
-            .Left => raylib.KEY_A,
-            .Right => raylib.KEY_D,
+        const RaylibKeyCode = switch (keyCode) {
+            .Up => Raylib.KEY_W,
+            .Down => Raylib.KEY_S,
+            .Left => Raylib.KEY_A,
+            .Right => Raylib.KEY_D,
         };
 
-        return raylibKeyCode;
+        return RaylibKeyCode;
     }
 };
