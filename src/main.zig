@@ -1,24 +1,53 @@
 const std = @import("std");
 
+const raylib = @cImport({
+    @cInclude("/usr/local/include/raylib.h");
+    @cInclude("/usr/local/include/raymath.h");
+});
+
+const Render = @import("render/render.zig").Render;
+const input = @import("input/input.zig");
+const Input = input.Input;
+const KeyEnum = input.KeyEnum;
+
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+    const stdout = std.io.getStdOut().writer();
+    try stdout.writeAll("Hello world!\n");
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
+    var render = Render.init();
+    defer render.deinit();
 
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
+    var x: f32 = 42;
+    var y: f32 = 42;
+    const w: i32 = 128;
+    const h: i32 = 128;
+    const color = [4]u8{ 0xFF, 0x19, 0x19, 0xFF };
 
-    try bw.flush(); // don't forget to flush!
-}
+    while (render.shouldRender()) {
+        render.beginDraw();
+        defer render.endDraw();
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+        render.drawRectangle(@intFromFloat(x), @intFromFloat(y), w, h, color);
+
+        const speed = w;
+        var ySpeed: f32 = 0;
+        var xSpeed: f32 = 0;
+
+        if (Input.isKeyDown(.Up)) {
+            ySpeed -= speed;
+        }
+        if (Input.isKeyDown(.Down)) {
+            ySpeed += speed;
+        }
+        if (Input.isKeyDown(.Left)) {
+            xSpeed -= speed;
+        }
+        if (Input.isKeyDown(.Right)) {
+            xSpeed += speed;
+        }
+
+        const frameTime = render.getFrameTime();
+        x += xSpeed * frameTime;
+        y += ySpeed * frameTime;
+    }
 }
