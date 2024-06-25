@@ -28,4 +28,13 @@ pub const Rectangle = struct {
             .height = self.h,
         };
     }
+
+    pub fn clone(self: *const Rectangle) Rectangle {
+        return Rectangle{
+            .x = self.x,
+            .y = self.y,
+            .w = self.w,
+            .h = self.h,
+        };
+    }
 };
