@@ -27,11 +27,33 @@ pub fn main() !void {
         .a = 0xff,
     };
 
+    // NOTE: For health example
+    const baseRect: utils.Rectangle = .{
+        .x = 500,
+        .y = 500,
+        .w = 400,
+        .h = 100,
+    };
+    const baseColor = utils.Color{
+        .r = 0xaa,
+        .g = 0xaa,
+        .b = 0xaa,
+        .a = 0xff,
+    };
+    const healthColor = utils.Color{
+        .r = 0xff,
+        .g = 0x00,
+        .b = 0x00,
+        .a = 0xff,
+    };
+
     while (render.shouldRender()) {
         render.beginDraw();
         defer render.endDraw();
 
         render.drawRectangleRect(rect, color);
+
+        displayHealth(render, baseRect, baseColor, healthColor, 0.32);
 
         const speed = rect.w;
         var ySpeed: f32 = 0;
@@ -54,4 +76,13 @@ pub fn main() !void {
         rect.x += xSpeed * frameTime;
         rect.y += ySpeed * frameTime;
     }
+}
+
+fn displayHealth(render: Render, baseRect: utils.Rectangle, baseColor: utils.Color, healthColor: utils.Color, percentage: f32) void {
+    var healthRect = baseRect.clone();
+    healthRect.w = baseRect.w * percentage;
+
+    render.drawRectangleRect(baseRect, baseColor);
+    healthRect.x += baseRect.w - healthRect.w;
+    render.drawRectangleRect(healthRect, healthColor);
 }
