@@ -14,6 +14,11 @@ pub const Color = struct {
     }
 };
 
+pub const Point = struct {
+    x: f32,
+    y: f32,
+};
+
 pub const Rectangle = struct {
     x: f32,
     y: f32,
@@ -35,6 +40,16 @@ pub const Rectangle = struct {
             .y = self.y,
             .w = self.w,
             .h = self.h,
+        };
+    }
+
+    pub fn getCenter(self: *const Rectangle) Point {
+        const cx = self.x + self.w / 2;
+        const cy = self.y - self.h / 2;
+
+        return Point{
+            .x = cx,
+            .y = cy,
         };
     }
 };
