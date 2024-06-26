@@ -10,7 +10,7 @@ pub const Entity = struct {
     pub fn defaultTurret(box: utils.Rectangle) Entity {
         const defaultStatus = Status{
             .health = 20,
-            .attack = 40,
+            .attack = 4,
             .range = 3,
         };
 
@@ -24,7 +24,7 @@ pub const Entity = struct {
     pub fn defaultEnemy(box: utils.Rectangle) Entity {
         const defaultStatus = Status{
             .health = 20,
-            .attack = 40,
+            .attack = 2,
             .range = 1,
         };
 
@@ -33,5 +33,28 @@ pub const Entity = struct {
             .status = defaultStatus,
             .defaultStatus = defaultStatus,
         };
+    }
+
+    pub fn healthRect(self: *Entity) utils.Rectangle {
+        const center = self.box.getCenter();
+        var rect = utils.Rectangle{
+            .x = center.x,
+            .y = center.y,
+            .w = self.box.w,
+            .h = 10,
+        };
+        const yPadding = rect.h / 2 - 15;
+
+        rect.x = center.x - rect.w / 2;
+        rect.y -= yPadding;
+
+        return rect;
+    }
+
+    pub fn healthPercentage(self: *const Entity) f32 {
+        const currentHP: f32 = @floatFromInt(self.status.health);
+        const defaultHP: f32 = @floatFromInt(self.defaultStatus.health);
+        const percentage: f32 = currentHP / defaultHP;
+        return percentage;
     }
 };
