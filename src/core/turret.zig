@@ -12,9 +12,13 @@ pub const DEFAULT_COLOR = utils.Color{
 pub const Turret = struct {
     entity: Entity,
 
-    pub fn init(box: utils.Rectangle) Turret {
+    pub fn new(box: utils.Rectangle) Turret {
         return Turret{
             .entity = Entity.defaultTurret(box),
         };
+    }
+
+    pub fn observer(self: *Turret, entity: *Entity) void {
+        entity.status.health -= self.entity.status.attack;
     }
 };
