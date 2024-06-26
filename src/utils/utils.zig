@@ -1,6 +1,6 @@
 pub const Raylib = @cImport({
-    @cInclude("/usr/local/include/raylib.h");
-    @cInclude("/usr/local/include/raymath.h");
+    @cInclude("raylib.h");
+    @cInclude("raymath.h");
 });
 
 pub const Color = struct {
