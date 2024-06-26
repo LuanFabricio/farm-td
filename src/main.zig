@@ -13,19 +13,24 @@ const Input = input.Input;
 const KeyEnum = input.KeyEnum;
 
 pub fn main() !void {
-    const t = turret.Turret.init(utils.Rectangle{
+    var t = turret.Turret.new(utils.Rectangle{
         .x = 400,
         .y = 300,
         .w = 32,
         .h = 64,
     });
 
-    const e = enemy.Enemy.init(utils.Rectangle{
+    var e: enemy.Enemy = enemy.Enemy.init(utils.Rectangle{
         .x = 200,
         .y = 300,
         .w = 32,
         .h = 64,
     });
+    defer e.deinit();
+
+    try e.addObserver(&t);
+
+    e.notifyAll();
 
     const stdout = std.io.getStdOut().writer();
     try stdout.writeAll("Hello world!\n");
@@ -76,6 +81,10 @@ pub fn main() !void {
 
         render.drawRectangleRect(t.entity.box, turret.DEFAULT_COLOR);
         render.drawRectangleRect(e.entity.box, enemy.DEFAULT_COLOR);
+
+        const turretRect = e.entity.healthRect();
+        const turretHpP: f32 = e.entity.healthPercentage();
+        displayHealth(render, turretRect, baseColor, healthColor, turretHpP);
 
         const speed = rect.w;
         var ySpeed: f32 = 0;
