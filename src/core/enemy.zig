@@ -8,6 +8,8 @@ const utils = @import("../utils/utils.zig");
 const Entity = @import("entity.zig").Entity;
 const Turret = @import("turret.zig").Turret;
 
+const DEFAULT_SPEED: f32 = 10;
+
 pub const DEFAULT_COLOR = utils.Color{
     .r = 0x19,
     .g = 0xff,
@@ -38,5 +40,10 @@ pub const Enemy = struct {
         for (self.turrets.items) |turret| {
             turret.observer(&self.entity);
         }
+    }
+
+    pub fn move(self: *Enemy, frameTime: f32) void {
+        self.entity.box.x += DEFAULT_SPEED * frameTime;
+        self.notifyAll();
     }
 };
