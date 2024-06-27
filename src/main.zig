@@ -106,6 +106,7 @@ pub fn main() !void {
         const frameTime = render.getFrameTime();
         rect.x += xSpeed * frameTime;
         rect.y += ySpeed * frameTime;
+        e.move(frameTime);
     }
 }
 
