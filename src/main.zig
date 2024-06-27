@@ -82,7 +82,7 @@ pub fn main() !void {
         render.drawRectangleRect(t.entity.box, turret.DEFAULT_COLOR);
         render.drawRectangleRect(e.entity.box, enemy.DEFAULT_COLOR);
 
-        const turretRect = e.entity.healthRect();
+        const turretRect = e.entity.getHealthRect();
         const turretHpP: f32 = e.entity.healthPercentage();
         displayHealth(render, turretRect, baseColor, healthColor, turretHpP);
 

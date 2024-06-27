@@ -35,7 +35,7 @@ pub const Entity = struct {
         };
     }
 
-    pub fn healthRect(self: *Entity) utils.Rectangle {
+    pub fn getHealthRect(self: *Entity) utils.Rectangle {
         const center = self.box.getCenter();
         var rect = utils.Rectangle{
             .x = center.x,
