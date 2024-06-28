@@ -11,7 +11,7 @@ pub const Entity = struct {
         const defaultStatus = Status{
             .health = 20,
             .attack = 4,
-            .range = 3,
+            .range = 350,
         };
 
         return Entity{
