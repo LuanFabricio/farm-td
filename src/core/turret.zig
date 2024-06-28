@@ -29,10 +29,21 @@ pub const Turret = struct {
     }
 
     pub fn observer(self: *Turret, entity: *Entity) void {
-        const now = timestamp();
-        if (now >= self.attackTime) {
-            entity.status.health -= self.entity.status.attack;
-            self.attackTime = now + self.attackDelay;
+        const enemyCenter = entity.box.getCenter();
+        const selfCenter = self.entity.box.getCenter();
+        const dist = selfCenter.calcDist(&enemyCenter);
+
+        const range = self.entity.status.range;
+
+        // NOTE: Maybe, in the future, create two types of turrets radius and line turrets.
+        // Where the radius turret shots based on the radius range (a circle)
+        // and the line turrets shot based on the line in the grid
+        if (dist <= range) {
+            const now = timestamp();
+            if (now >= self.attackTime) {
+                entity.status.health -= self.entity.status.attack;
+                self.attackTime = now + self.attackDelay;
+            }
         }
     }
 };
