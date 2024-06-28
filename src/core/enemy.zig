@@ -43,7 +43,9 @@ pub const Enemy = struct {
     }
 
     pub fn move(self: *Enemy, frameTime: f32) void {
-        self.entity.box.x += DEFAULT_SPEED * frameTime;
-        self.notifyAll();
+        if (self.entity.status.health > 0) {
+            self.entity.box.x += DEFAULT_SPEED * frameTime;
+            self.notifyAll();
+        }
     }
 };

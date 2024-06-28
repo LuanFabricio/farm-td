@@ -23,7 +23,7 @@ pub const Turret = struct {
 
         return Turret{
             .entity = Entity.defaultTurret(box),
-            .attackDelay = 15,
+            .attackDelay = 1,
             .attackTime = attackTime,
         };
     }
