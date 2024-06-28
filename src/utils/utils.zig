@@ -17,6 +17,14 @@ pub const Color = struct {
 pub const Point = struct {
     x: f32,
     y: f32,
+
+    pub fn calcDist(self: *const Point, other: *const Point) f32 {
+        const dx = self.x - other.x;
+        const dy = self.y - other.y;
+
+        const squaredDist = dx * dx + dy * dy;
+        return @sqrt(squaredDist);
+    }
 };
 
 pub const Rectangle = struct {
