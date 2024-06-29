@@ -1,3 +1,6 @@
+const Turret = @import("turret.zig").Turret;
+const Enemy = @import("enemy.zig").Enemy;
+
 pub const GridItemEnum = enum(i3) {
     Empty,
     Turret,
@@ -44,8 +47,12 @@ pub const Grid = struct {
         };
     }
 
+    fn xyToIndex(self: *Grid, x: usize, y: usize) usize {
+        return y * self.width + x;
+    }
+
     pub fn addItem(self: *Grid, x: usize, y: usize, itemType: GridItemEnum, item: *anyopaque) void {
-        const idx = y * self.width + x;
+        const idx = self.xyToIndex(x, y);
 
         const gridItem = switch (itemType) {
             GridItemEnum.Turret => GridItem.newTurret(item),
@@ -54,5 +61,22 @@ pub const Grid = struct {
         };
 
         self.items[idx] = gridItem;
+    }
+
+    pub fn getItem(self: *Grid, x: usize, y: usize) !GridItem {
+        const idx = self.xyToIndex(x, y);
+
+        if (idx > self.items.len) {
+            return error{ItemOutOfBounds};
+        }
+        return self.items[idx];
+    }
+
+    pub fn castItemToTurret(item: GridItem) *Turret {
+        return @ptrCast(@alignCast(item.data));
+    }
+
+    pub fn castItemToEnemy(item: GridItem) *Enemy {
+        return @ptrCast(@alignCast(item.data));
     }
 };
