@@ -72,16 +72,29 @@ test "It should add an item" {
         .w = 32,
         .h = 32,
     });
-
     g.addItem(3, 3, GridItemEnum.Turret, @as(*anyopaque, @ptrCast(&t)));
 
-    const idx = g.xyToIndex(3, 3);
-    const item = g.items[idx];
-    try expect(item.itemType == GridItemEnum.Turret);
+    var idx = g.xyToIndex(3, 3);
+    const itemT = g.items[idx];
+    try expect(itemT.itemType == GridItemEnum.Turret);
 
-    const t2 = Grid.castItemToTurret(item);
-
+    const t2 = Grid.castItemToTurret(itemT);
     try compareEntities(t.entity, t2.entity);
+
+    var e = Turret.new(.{
+        .x = 42,
+        .y = 42,
+        .w = 32,
+        .h = 32,
+    });
+    g.addItem(4, 4, GridItemEnum.Enemy, @as(*anyopaque, @ptrCast(&e)));
+
+    idx = g.xyToIndex(3, 3);
+    const itemE = g.items[idx];
+    try expect(itemE.itemType == GridItemEnum.Turret);
+
+    const e2 = Grid.castItemToTurret(itemE);
+    try compareEntities(e.entity, e2.entity);
 }
 
 test "It should get an item" {
