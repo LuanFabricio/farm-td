@@ -75,7 +75,7 @@ test "It should add an item" {
 
     g.addItem(3, 3, GridItemEnum.Turret, @as(*anyopaque, @ptrCast(&t)));
 
-    const idx = 3 * g.width + 3;
+    const idx = g.xyToIndex(3, 3);
     const item = g.items[idx];
     try expect(item.itemType == GridItemEnum.Turret);
 
@@ -85,5 +85,30 @@ test "It should add an item" {
 }
 
 test "It should get an item" {
-    // TODO: Add tests
+    var g = Grid.new(32, 32);
+
+    var t = Turret.new(utils.Rectangle{
+        .x = 42,
+        .y = 42,
+        .w = 32,
+        .h = 32,
+    });
+    g.addItem(3, 3, GridItemEnum.Turret, @as(*anyopaque, @ptrCast(&t)));
+    const itemT = try g.getItem(3, 3);
+
+    const t2 = Grid.castItemToTurret(itemT);
+    try compareEntities(t.entity, t2.entity);
+
+    var e = Enemy.init(utils.Rectangle{
+        .x = 42,
+        .y = 42,
+        .w = 32,
+        .h = 32,
+    });
+    defer e.deinit();
+    g.addItem(4, 4, GridItemEnum.Enemy, @as(*anyopaque, @ptrCast(&e)));
+    const itemE = try g.getItem(4, 4);
+
+    const e2 = Grid.castItemToEnemy(itemE);
+    try compareEntities(e.entity, e2.entity);
 }
