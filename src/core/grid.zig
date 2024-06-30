@@ -47,7 +47,7 @@ pub const Grid = struct {
         };
     }
 
-    fn xyToIndex(self: *Grid, x: usize, y: usize) usize {
+    pub fn xyToIndex(self: *Grid, x: usize, y: usize) usize {
         return y * self.width + x;
     }
 
@@ -67,7 +67,7 @@ pub const Grid = struct {
         const idx = self.xyToIndex(x, y);
 
         if (idx > self.items.len) {
-            return error{ItemOutOfBounds};
+            return error.ItemOutOfBounds;
         }
         return self.items[idx];
     }
