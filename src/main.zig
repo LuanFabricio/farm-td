@@ -3,6 +3,12 @@ const std = @import("std");
 const utils = @import("utils/utils.zig");
 
 const Entity = @import("core/entity.zig").Entity;
+
+const grid = @import("core/grid.zig");
+const Grid = grid.Grid;
+const GridItemEnum = grid.GridItemEnum;
+const GridItem = grid.GridItem;
+
 const turret = @import("core/turret.zig");
 const enemy = @import("core/enemy.zig");
 
@@ -13,6 +19,20 @@ const Input = input.Input;
 const KeyEnum = input.KeyEnum;
 
 pub fn main() !void {
+    var g = try Grid.init(5, 5);
+    defer g.deinit();
+
+    std.debug.print("\nFresh grid:\n", .{});
+    for (g.items.items, 0..) |item, i| {
+        const str = switch (item) {
+            .turret => "turret",
+            .enemy => "enemy",
+            .empty => "empty",
+        };
+        std.debug.print("\t[{d}]: {s}\n", .{ i, str });
+    }
+
+    // TODO: Move entity position to grid
     var t = turret.Turret.new(utils.Rectangle{
         .x = 400,
         .y = 300,
@@ -27,6 +47,17 @@ pub fn main() !void {
         .h = 64,
     });
     defer e.deinit();
+    try g.addItem(1, 1, .enemy, @as(*anyopaque, @ptrCast(&e)));
+    try g.addItem(2, 1, .turret, @as(*anyopaque, @ptrCast(&t)));
+
+    std.debug.print("Final grid:\n", .{});
+    for (g.items.items, 0..) |item, i| {
+        switch (item) {
+            .turret => std.debug.print("\t[{d}]: turret\n", .{i}),
+            .enemy => std.debug.print("\t[{d}]: enemy\n", .{i}),
+            .empty => {},
+        }
+    }
 
     try e.addObserver(&t);
 
@@ -79,12 +110,12 @@ pub fn main() !void {
 
         displayHealth(render, baseRect, baseColor, healthColor, 0.32);
 
-        render.drawRectangleRect(t.entity.box, turret.DEFAULT_COLOR);
-        render.drawRectangleRect(e.entity.box, enemy.DEFAULT_COLOR);
+        // render.drawRectangleRect(e.entity.box, enemy.DEFAULT_COLOR);
 
-        const turretRect = e.entity.getHealthRect();
-        const turretHpP: f32 = e.entity.healthPercentage();
-        displayHealth(render, turretRect, baseColor, healthColor, turretHpP);
+        // render.drawRectangleRect(t.entity.box, turret.DEFAULT_COLOR);
+        // const turretRect = t.entity.getHealthRect();
+        // const turretHpP: f32 = t.entity.healthPercentage();
+        // displayHealth(render, turretRect, baseColor, healthColor, turretHpP);
 
         const speed = rect.w;
         var ySpeed: f32 = 0;
@@ -103,6 +134,19 @@ pub fn main() !void {
             xSpeed += speed;
         }
 
+        for (g.items.items, 0..) |item, i| {
+            std.debug.print("Enum: {d} {any}\n", .{ i, item });
+            switch (item) {
+                .turret => |gridTurret| {
+                    drawTurret(render, gridTurret, baseColor);
+                },
+                .enemy => |gridEnemy| {
+                    drawEnemy(render, gridEnemy, baseColor);
+                },
+                .empty => {},
+            }
+        }
+
         const frameTime = render.getFrameTime();
         rect.x += xSpeed * frameTime;
         rect.y += ySpeed * frameTime;
@@ -117,4 +161,24 @@ fn displayHealth(render: Render, baseRect: utils.Rectangle, baseColor: utils.Col
     render.drawRectangleRect(baseRect, baseColor);
     healthRect.x += baseRect.w - healthRect.w;
     render.drawRectangleRect(healthRect, healthColor);
+}
+
+fn drawTurret(render: Render, t: *const turret.Turret, baseColor: utils.Color) void {
+    render.drawRectangleRect(t.entity.box, turret.DEFAULT_COLOR);
+
+    const turretRect = t.entity.getHealthRect();
+    const turretHpP: f32 = t.entity.healthPercentage();
+    const healthColor = utils.Color{ .r = 255, .g = 0, .b = 0, .a = 255 };
+
+    displayHealth(render, turretRect, baseColor, healthColor, turretHpP);
+}
+
+fn drawEnemy(render: Render, e: *const enemy.Enemy, baseColor: utils.Color) void {
+    render.drawRectangleRect(e.entity.box, enemy.DEFAULT_COLOR);
+
+    const enemyRect = e.entity.getHealthRect();
+    const enemyHpP: f32 = e.entity.healthPercentage();
+    const healthColor = utils.Color{ .r = 255, .g = 0, .b = 0, .a = 255 };
+
+    displayHealth(render, enemyRect, baseColor, healthColor, enemyHpP);
 }
