@@ -4,6 +4,7 @@ const utils = @import("../utils/utils.zig");
 const Raylib = utils.Raylib;
 const Color = utils.Color;
 const Rectangle = utils.Rectangle;
+const Point = utils.Point;
 
 pub const Render = struct {
     live: bool,
@@ -42,6 +43,14 @@ pub const Render = struct {
     pub fn drawRectangleRect(_: *const Render, rectangle: Rectangle, color: Color) void {
         const rayColor = color.toRayColor();
         Raylib.DrawRectangleRec(rectangle.toRayRect(), rayColor);
+    }
+
+    pub fn drawLineP(_: *const Render, p1: Point, p2: Point, color: Color) void {
+        const rayColor = color.toRayColor();
+        const p1RayVec2 = p1.toRayVec2();
+        const p2RayVec2 = p2.toRayVec2();
+
+        Raylib.DrawLineV(p1RayVec2, p2RayVec2, rayColor);
     }
 
     pub fn getFrameTime(_: *Render) f32 {
