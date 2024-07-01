@@ -25,6 +25,13 @@ pub const Point = struct {
         const squaredDist = dx * dx + dy * dy;
         return @sqrt(squaredDist);
     }
+
+    pub fn toRayVec2(self: *const Point) Raylib.Vector2 {
+        return Raylib.Vector2{
+            .x = self.x,
+            .y = self.y,
+        };
+    }
 };
 
 pub const Rectangle = struct {
