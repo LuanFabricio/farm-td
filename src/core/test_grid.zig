@@ -15,56 +15,31 @@ fn compareEntities(e1: Entity, e2: Entity) !void {
     try expect(e1.box.y == e2.box.y);
     try expect(e1.box.w == e2.box.w);
     try expect(e1.box.h == e2.box.h);
+
+    try expect(e1.status.health == e2.status.health);
+    try expect(e1.status.attack == e2.status.attack);
+    try expect(e1.status.range == e2.status.range);
+
+    try expect(e1.defaultStatus.health == e2.defaultStatus.health);
+    try expect(e1.defaultStatus.attack == e2.defaultStatus.attack);
+    try expect(e1.defaultStatus.range == e2.defaultStatus.range);
 }
 
 test "It should create a new Grid" {
     const w = 32;
     const h = 32;
-    const g = Grid.new(w, h);
+    const g = try Grid.init(w, h);
+    defer g.deinit();
 
     const len = w * h;
     try expect(g.width == w);
     try expect(g.height == h);
-    try expect(g.items.len == len);
-}
-
-test "It should cast an item to Turret" {
-    var t = Turret.new(utils.Rectangle{
-        .x = 32,
-        .y = 32,
-        .w = 32,
-        .h = 32,
-    });
-
-    const item = GridItem{
-        .data = @ptrCast(&t),
-        .itemType = GridItemEnum.Turret,
-    };
-    const t2 = Grid.castItemToTurret(item);
-
-    try compareEntities(t.entity, t2.entity);
-}
-
-test "It should cast an item to Enemy" {
-    var e = Enemy.init(utils.Rectangle{
-        .x = 32,
-        .y = 32,
-        .w = 32,
-        .h = 32,
-    });
-    defer e.deinit();
-
-    const item = GridItem{
-        .data = @ptrCast(&e),
-        .itemType = GridItemEnum.Enemy,
-    };
-    const e2 = Grid.castItemToEnemy(item);
-
-    try compareEntities(e.entity, e2.entity);
+    try expect(g.items.items.len == len);
 }
 
 test "It should add an item" {
-    var g = Grid.new(32, 32);
+    var g = try Grid.init(32, 32);
+    defer g.deinit();
 
     var t = Turret.new(.{
         .x = 42,
@@ -72,33 +47,33 @@ test "It should add an item" {
         .w = 32,
         .h = 32,
     });
-    g.addItem(3, 3, GridItemEnum.Turret, @as(*anyopaque, @ptrCast(&t)));
+    try g.addItem(3, 3, GridItemEnum.turret, @as(*anyopaque, @ptrCast(&t)));
 
-    var idx = g.xyToIndex(3, 3);
-    const itemT = g.items[idx];
-    try expect(itemT.itemType == GridItemEnum.Turret);
+    const itemT = try g.getItem(3, 3);
+    try expect(itemT == GridItemEnum.turret);
 
-    const t2 = Grid.castItemToTurret(itemT);
+    const t2 = itemT.turret;
     try compareEntities(t.entity, t2.entity);
 
-    var e = Turret.new(.{
+    var e = Enemy.init(.{
         .x = 42,
         .y = 42,
         .w = 32,
         .h = 32,
     });
-    g.addItem(4, 4, GridItemEnum.Enemy, @as(*anyopaque, @ptrCast(&e)));
+    defer e.deinit();
+    try g.addItem(4, 4, GridItemEnum.enemy, @as(*anyopaque, @ptrCast(&e)));
 
-    idx = g.xyToIndex(3, 3);
-    const itemE = g.items[idx];
-    try expect(itemE.itemType == GridItemEnum.Turret);
+    const itemE = try g.getItem(4, 4);
+    try expect(itemE == GridItemEnum.enemy);
 
-    const e2 = Grid.castItemToTurret(itemE);
+    const e2 = itemE.enemy;
     try compareEntities(e.entity, e2.entity);
 }
 
 test "It should get an item" {
-    var g = Grid.new(32, 32);
+    var g = try Grid.init(32, 32);
+    defer g.deinit();
 
     var t = Turret.new(utils.Rectangle{
         .x = 42,
@@ -106,10 +81,10 @@ test "It should get an item" {
         .w = 32,
         .h = 32,
     });
-    g.addItem(3, 3, GridItemEnum.Turret, @as(*anyopaque, @ptrCast(&t)));
+    try g.addItem(3, 3, GridItemEnum.turret, @as(*anyopaque, @ptrCast(&t)));
     const itemT = try g.getItem(3, 3);
 
-    const t2 = Grid.castItemToTurret(itemT);
+    const t2 = itemT.turret;
     try compareEntities(t.entity, t2.entity);
 
     var e = Enemy.init(utils.Rectangle{
@@ -119,9 +94,9 @@ test "It should get an item" {
         .h = 32,
     });
     defer e.deinit();
-    g.addItem(4, 4, GridItemEnum.Enemy, @as(*anyopaque, @ptrCast(&e)));
+    try g.addItem(4, 4, GridItemEnum.enemy, @as(*anyopaque, @ptrCast(&e)));
     const itemE = try g.getItem(4, 4);
 
-    const e2 = Grid.castItemToEnemy(itemE);
+    const e2 = itemE.enemy;
     try compareEntities(e.entity, e2.entity);
 }
