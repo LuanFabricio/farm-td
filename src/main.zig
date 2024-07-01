@@ -22,15 +22,15 @@ pub fn main() !void {
     var g = try Grid.init(5, 5);
     defer g.deinit();
 
-    std.debug.print("\nFresh grid:\n", .{});
-    for (g.items.items, 0..) |item, i| {
-        const str = switch (item) {
-            .turret => "turret",
-            .enemy => "enemy",
-            .empty => "empty",
-        };
-        std.debug.print("\t[{d}]: {s}\n", .{ i, str });
-    }
+    // std.debug.print("\nFresh grid:\n", .{});
+    // for (g.items.items, 0..) |item, i| {
+    //     const str = switch (item) {
+    //         .turret => "turret",
+    //         .enemy => "enemy",
+    //         .empty => "empty",
+    //     };
+    //     std.debug.print("\t[{d}]: {s}\n", .{ i, str });
+    // }
 
     // TODO: Move entity position to grid
     var t = turret.Turret.new(utils.Rectangle{
@@ -50,14 +50,14 @@ pub fn main() !void {
     try g.addItem(1, 1, .enemy, @as(*anyopaque, @ptrCast(&e)));
     try g.addItem(2, 1, .turret, @as(*anyopaque, @ptrCast(&t)));
 
-    std.debug.print("Final grid:\n", .{});
-    for (g.items.items, 0..) |item, i| {
-        switch (item) {
-            .turret => std.debug.print("\t[{d}]: turret\n", .{i}),
-            .enemy => std.debug.print("\t[{d}]: enemy\n", .{i}),
-            .empty => {},
-        }
-    }
+    // std.debug.print("Final grid:\n", .{});
+    // for (g.items.items, 0..) |item, i| {
+    //     switch (item) {
+    //         .turret => std.debug.print("\t[{d}]: turret\n", .{i}),
+    //         .enemy => std.debug.print("\t[{d}]: enemy\n", .{i}),
+    //         .empty => {},
+    //     }
+    // }
 
     try e.addObserver(&t);
 
@@ -134,8 +134,8 @@ pub fn main() !void {
             xSpeed += speed;
         }
 
-        for (g.items.items, 0..) |item, i| {
-            std.debug.print("Enum: {d} {any}\n", .{ i, item });
+        for (g.items.items) |item| {
+            // std.debug.print("Enum: {d} {any}\n", .{ i, item });
             switch (item) {
                 .turret => |gridTurret| {
                     drawTurret(render, gridTurret, baseColor);
@@ -146,6 +146,8 @@ pub fn main() !void {
                 .empty => {},
             }
         }
+
+        drawGrid(render, g, utils.Point{ .x = 128, .y = 64 }, 64);
 
         const frameTime = render.getFrameTime();
         rect.x += xSpeed * frameTime;
@@ -181,4 +183,30 @@ fn drawEnemy(render: Render, e: *const enemy.Enemy, baseColor: utils.Color) void
     const healthColor = utils.Color{ .r = 255, .g = 0, .b = 0, .a = 255 };
 
     displayHealth(render, enemyRect, baseColor, healthColor, enemyHpP);
+}
+
+fn drawGrid(render: Render, g: Grid, offset: utils.Point, gridSize: f32) void {
+    const worldWidth: f32 = offset.x + @as(f32, @floatFromInt(g.width)) * gridSize;
+    const worldHeight: f32 = offset.y + @as(f32, @floatFromInt(g.height)) * gridSize;
+    const lineColor = utils.Color{ .r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff };
+
+    var i: usize = 0;
+
+    var p1 = utils.Point{ .x = offset.x, .y = offset.y };
+    var p2 = utils.Point{ .x = worldWidth, .y = offset.y };
+    while (i < g.height + 1) : (i += 1) {
+        render.drawLineP(p1, p2, lineColor);
+        p1.y += gridSize;
+        p2.y += gridSize;
+    }
+
+    i = 0;
+
+    p1 = utils.Point{ .x = offset.x, .y = offset.y };
+    p2 = utils.Point{ .x = offset.x, .y = worldHeight };
+    while (i < g.width + 1) : (i += 1) {
+        render.drawLineP(p1, p2, lineColor);
+        p1.x += gridSize;
+        p2.x += gridSize;
+    }
 }
