@@ -1,82 +1,79 @@
+const std = @import("std");
+
+const ArrayList = std.ArrayList;
+const allocator = std.heap.page_allocator;
+
+const utils = @import("../utils/utils.zig");
+
 const Turret = @import("turret.zig").Turret;
 const Enemy = @import("enemy.zig").Enemy;
+const Entity = @import("entity.zig").Entity;
 
-pub const GridItemEnum = enum(i3) {
-    Empty,
-    Turret,
-    Enemy,
+pub const GridItemEnum = enum(u8) {
+    empty = 0,
+    enemy = 1,
+    turret = 2,
 };
 
-pub const GridItem = struct {
-    data: ?*anyopaque,
-    itemType: GridItemEnum,
-
-    fn newEmpty() GridItem {
-        return GridItem{
-            .data = null,
-            .itemType = GridItemEnum.Empty,
-        };
-    }
-
-    fn newTurret(turret: *anyopaque) GridItem {
-        return GridItem{
-            .data = turret,
-            .itemType = GridItemEnum.Turret,
-        };
-    }
-
-    fn newEnemy(enemy: *anyopaque) GridItem {
-        return GridItem{
-            .data = enemy,
-            .itemType = GridItemEnum.Enemy,
-        };
-    }
+pub const GridItem = union(GridItemEnum) {
+    empty: u8,
+    enemy: *Enemy,
+    turret: *Turret,
 };
 
 pub const Grid = struct {
     width: usize,
     height: usize,
-    items: []GridItem,
+    items: ArrayList(GridItem),
 
-    pub fn new(comptime width: usize, comptime height: usize) Grid {
+    pub fn init(width: usize, height: usize) !Grid {
         const len = width * height;
-        return Grid{
+
+        var g = Grid{
             .width = width,
             .height = height,
-            .items = &[_]GridItem{GridItem.newEmpty()} ** len,
+            .items = ArrayList(GridItem).init(allocator),
         };
+        try g.items.resize(len);
+
+        var i: usize = 0;
+        while (i < len) : (i += 1) {
+            g.items.items[i] = GridItem{ .empty = 0 };
+        }
+
+        return g;
+    }
+
+    pub fn deinit(self: *const Grid) void {
+        self.items.deinit();
     }
 
     pub fn xyToIndex(self: *Grid, x: usize, y: usize) usize {
         return y * self.width + x;
     }
 
-    pub fn addItem(self: *Grid, x: usize, y: usize, itemType: GridItemEnum, item: *anyopaque) void {
+    pub fn addItem(self: *Grid, x: usize, y: usize, itemType: GridItemEnum, item: *anyopaque) !void {
         const idx = self.xyToIndex(x, y);
 
+        if (idx > self.items.items.len) {
+            return error.ItemOutOfBounds;
+        }
+
         const gridItem = switch (itemType) {
-            GridItemEnum.Turret => GridItem.newTurret(item),
-            GridItemEnum.Enemy => GridItem.newEnemy(item),
-            GridItemEnum.Empty => GridItem.newEmpty(),
+            .turret => GridItem{ .turret = @as(*Turret, @ptrCast(@alignCast(item))) },
+            .enemy => GridItem{ .enemy = @as(*Enemy, @ptrCast(@alignCast(item))) },
+            .empty => GridItem{ .empty = 0 },
         };
 
-        self.items[idx] = gridItem;
+        self.items.items[idx] = gridItem;
     }
 
     pub fn getItem(self: *Grid, x: usize, y: usize) !GridItem {
         const idx = self.xyToIndex(x, y);
 
-        if (idx > self.items.len) {
+        if (idx > self.items.items.len) {
             return error.ItemOutOfBounds;
         }
-        return self.items[idx];
-    }
-
-    pub fn castItemToTurret(item: GridItem) *Turret {
-        return @ptrCast(@alignCast(item.data));
-    }
-
-    pub fn castItemToEnemy(item: GridItem) *Enemy {
-        return @ptrCast(@alignCast(item.data));
+        return self.items.items[idx];
     }
 };
