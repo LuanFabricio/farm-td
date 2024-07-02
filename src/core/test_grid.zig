@@ -1,4 +1,5 @@
-const expect = @import("std").testing.expect;
+const std = @import("std");
+const expect = std.testing.expect;
 
 const utils = @import("../utils/utils.zig");
 const Turret = @import("turret.zig").Turret;
@@ -99,4 +100,40 @@ test "It should get an item" {
 
     const e2 = itemE.enemy;
     try compareEntities(e.entity, e2.entity);
+}
+
+test "It should map world point to grid" {
+    const g = try Grid.init(3, 4);
+    defer g.deinit();
+
+    // WorldSize = (30, 40)
+    const worldPoint1 = utils.Point{ .x = 20, .y = 10 };
+    const cellSize: f32 = 5;
+
+    const gridOffset = utils.Point{ .x = 10, .y = 10 };
+
+    var gridPoint = g.worldToGrid(worldPoint1, gridOffset, cellSize);
+
+    if (gridPoint) |gp| {
+        try expect(gp.x == 2);
+        try expect(gp.y == 0);
+    } else {
+        try expect(false);
+    }
+
+    // Out of bounds (min)
+    const worldPoint2 = utils.Point{ .x = 0, .y = 0 };
+    gridPoint = g.worldToGrid(worldPoint2, gridOffset, cellSize);
+    // Should be null
+    if (gridPoint) |_| {
+        try expect(false);
+    }
+
+    // Out of bounds max()
+    const worldPoint3 = utils.Point{ .x = 10, .y = 40 };
+    gridPoint = g.worldToGrid(worldPoint3, gridOffset, cellSize);
+    // Should be null
+    if (gridPoint) |_| {
+        try expect(false);
+    }
 }
