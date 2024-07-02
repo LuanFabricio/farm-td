@@ -76,4 +76,22 @@ pub const Grid = struct {
         }
         return self.items.items[idx];
     }
+
+    pub fn worldToGrid(self: *const Grid, worldPoint: utils.Point, gridOffset: utils.Point, cellSize: f32) ?utils.Point {
+        const maxX: f32 = @as(f32, @floatFromInt(self.width)) * cellSize + gridOffset.x;
+        const maxY: f32 = @as(f32, @floatFromInt(self.height)) * cellSize + gridOffset.y;
+
+        if (worldPoint.x < gridOffset.x or worldPoint.x > maxX or worldPoint.y < gridOffset.y or worldPoint.y > maxY) {
+            return null;
+        }
+
+        var gridPoint = utils.Point{
+            .x = worldPoint.x - gridOffset.x,
+            .y = worldPoint.y - gridOffset.y,
+        };
+        gridPoint.x = @divFloor(gridPoint.x, cellSize);
+        gridPoint.y = @divFloor(gridPoint.y, cellSize);
+
+        return gridPoint;
+    }
 };
