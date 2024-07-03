@@ -1,4 +1,6 @@
-const Raylib = @import("../utils/utils.zig").Raylib;
+const utils = @import("../utils/utils.zig");
+
+const Raylib = utils.Raylib;
 
 pub const KeyEnum = enum(i32) {
     Up,
@@ -38,6 +40,14 @@ pub const Input = struct {
     pub fn isMouseBntPressed(mouse: MouseBntEnum) bool {
         const raylibMouseCode = Input.mouseEnumToRaylib(mouse);
         return Raylib.IsMouseButtonPressed(raylibMouseCode);
+    }
+
+    pub fn mousePoint() utils.Point {
+        const rMousePoint = Raylib.GetMousePosition();
+        return utils.Point{
+            .x = rMousePoint.x,
+            .y = rMousePoint.y,
+        };
     }
 
     fn mouseEnumToRaylib(mouse: MouseBntEnum) i32 {
