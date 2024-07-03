@@ -7,6 +7,12 @@ pub const Entity = struct {
     defaultStatus: Status,
     status: Status,
 
+    pub fn copy(self: *Entity, other: Entity) void {
+        self.box.copy(other.box);
+        self.status.copy(other.status);
+        self.defaultStatus.copy(other.defaultStatus);
+    }
+
     pub fn defaultTurret(box: utils.Rectangle) Entity {
         const defaultStatus = Status{
             .health = 20,

@@ -45,6 +45,14 @@ pub const Grid = struct {
     }
 
     pub fn deinit(self: *const Grid) void {
+        for (self.items.items) |item_ptr| {
+            switch (item_ptr) {
+                GridItemEnum.turret => |turret| allocator.destroy(turret),
+                GridItemEnum.enemy => |enemy| allocator.destroy(enemy),
+                GridItemEnum.empty => {},
+            }
+        }
+
         self.items.deinit();
     }
 

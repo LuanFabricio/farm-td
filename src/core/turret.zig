@@ -28,6 +28,12 @@ pub const Turret = struct {
         };
     }
 
+    pub fn copy(self: *Turret, other: Turret) void {
+        self.entity.copy(other.entity);
+        self.attackTime = other.attackTime;
+        self.attackDelay = other.attackDelay;
+    }
+
     pub fn observer(self: *Turret, entity: *Entity) void {
         const enemyCenter = entity.box.getCenter();
         const selfCenter = self.entity.box.getCenter();

@@ -32,7 +32,13 @@ pub const Enemy = struct {
         self.turrets.deinit();
     }
 
+    pub fn copy(self: *Enemy, other: Enemy) void {
+        self.entity.copy(other.entity);
+        self.turrets = ArrayList(*Turret).init(PageAllocator);
+    }
+
     pub fn addObserver(self: *Enemy, observer: *Turret) !void {
+        std.debug.print("Turrets: {d}\n", .{self.turrets.items.len});
         try self.turrets.append(observer);
     }
 
