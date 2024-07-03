@@ -40,6 +40,13 @@ pub const Rectangle = struct {
     w: f32,
     h: f32,
 
+    pub fn copy(self: *Rectangle, other: Rectangle) void {
+        self.x = other.x;
+        self.y = other.y;
+        self.w = other.w;
+        self.h = other.h;
+    }
+
     pub fn toRayRect(self: *const Rectangle) Raylib.Rectangle {
         return .{
             .x = self.x,
