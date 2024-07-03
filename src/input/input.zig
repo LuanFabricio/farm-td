@@ -42,7 +42,7 @@ pub const Input = struct {
         return Raylib.IsMouseButtonPressed(raylibMouseCode);
     }
 
-    pub fn mousePoint() utils.Point {
+    pub fn getMousePoint() utils.Point {
         const rMousePoint = Raylib.GetMousePosition();
         return utils.Point{
             .x = rMousePoint.x,
