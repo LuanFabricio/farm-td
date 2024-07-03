@@ -147,12 +147,37 @@ pub fn main() !void {
             }
         }
 
-        drawGrid(render, g, utils.Point{ .x = 128, .y = 64 }, 64);
+        const gridOffset = utils.Point{ .x = 64, .y = 64 };
+        const cellSize = 128;
+        drawGrid(render, g, gridOffset, cellSize);
 
         const frameTime = render.getFrameTime();
         rect.x += xSpeed * frameTime;
         rect.y += ySpeed * frameTime;
         e.move(frameTime);
+
+        if (Input.isMouseBntPressed(input.MouseBntEnum.Left)) {
+            const mousePoint = Input.getMousePoint();
+            std.debug.print("Mouse point: {any}\n", .{mousePoint});
+
+            if (g.worldToGrid(mousePoint, gridOffset, cellSize)) |p| {
+                std.debug.print("Grid point: {any}\n", .{p});
+
+                const box = utils.Rectangle{
+                    .x = (p.x + 1) * cellSize - 16,
+                    .y = (p.y + 1) * cellSize - 24,
+                    .w = 32,
+                    .h = 64,
+                };
+                // Maybe move to heap
+                var tn = turret.Turret.new(box);
+                try g.addItem(@as(usize, @intFromFloat(p.x)), @as(usize, @intFromFloat(p.y)), GridItemEnum.turret, @as(*anyopaque, @ptrCast(&tn)));
+
+                // TODO: Check how the array is updated
+                std.debug.print("Grid items len: {d}\n", .{g.items.items.len});
+                std.debug.print("Grid items: {any}\n", .{g.items.items});
+            }
+        }
     }
 }
 
