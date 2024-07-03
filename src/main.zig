@@ -1,4 +1,5 @@
 const std = @import("std");
+const allocator = std.heap.page_allocator;
 
 const utils = @import("utils/utils.zig");
 
@@ -33,22 +34,24 @@ pub fn main() !void {
     // }
 
     // TODO: Move entity position to grid
-    var t = turret.Turret.new(utils.Rectangle{
+    var t = try allocator.create(turret.Turret);
+    t.copy(turret.Turret.new(utils.Rectangle{
         .x = 400,
         .y = 300,
         .w = 32,
         .h = 64,
-    });
+    }));
 
-    var e: enemy.Enemy = enemy.Enemy.init(utils.Rectangle{
+    var e = try allocator.create(enemy.Enemy);
+    e.copy(enemy.Enemy.init(utils.Rectangle{
         .x = 200,
         .y = 300,
         .w = 32,
         .h = 64,
-    });
+    }));
     defer e.deinit();
-    try g.addItem(1, 1, .enemy, @as(*anyopaque, @ptrCast(&e)));
-    try g.addItem(2, 1, .turret, @as(*anyopaque, @ptrCast(&t)));
+    try g.addItem(1, 1, .enemy, @as(*anyopaque, @ptrCast(e)));
+    try g.addItem(2, 1, .turret, @as(*anyopaque, @ptrCast(t)));
 
     // std.debug.print("Final grid:\n", .{});
     // for (g.items.items, 0..) |item, i| {
@@ -59,7 +62,7 @@ pub fn main() !void {
     //     }
     // }
 
-    try e.addObserver(&t);
+    try e.addObserver(t);
 
     e.notifyAll();
 
@@ -170,8 +173,11 @@ pub fn main() !void {
                     .h = 64,
                 };
                 // Maybe move to heap
-                var tn = turret.Turret.new(box);
-                try g.addItem(@as(usize, @intFromFloat(p.x)), @as(usize, @intFromFloat(p.y)), GridItemEnum.turret, @as(*anyopaque, @ptrCast(&tn)));
+                // var tn = turret.Turret.new(box);
+                var tn_ptr = try allocator.create(turret.Turret);
+                tn_ptr.copy(turret.Turret.new(box));
+
+                try g.addItem(@as(usize, @intFromFloat(p.x)), @as(usize, @intFromFloat(p.y)), GridItemEnum.turret, @as(*anyopaque, @ptrCast(tn_ptr)));
 
                 // TODO: Check how the array is updated
                 std.debug.print("Grid items len: {d}\n", .{g.items.items.len});
