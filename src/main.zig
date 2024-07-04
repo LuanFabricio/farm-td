@@ -34,22 +34,19 @@ pub fn main() !void {
     // }
 
     // TODO: Move entity position to grid
-    var t = try allocator.create(turret.Turret);
-    t.copy(turret.Turret.new(utils.Rectangle{
+    const t = try turret.Turret.init(utils.Rectangle{
         .x = 400,
         .y = 300,
         .w = 32,
         .h = 64,
-    }));
+    });
 
-    var e = try allocator.create(enemy.Enemy);
-    e.copy(enemy.Enemy.init(utils.Rectangle{
+    var e = try enemy.Enemy.init(utils.Rectangle{
         .x = 200,
         .y = 300,
         .w = 32,
         .h = 64,
-    }));
-    defer e.deinit();
+    });
     try g.addItem(1, 1, .enemy, @as(*anyopaque, @ptrCast(e)));
     try g.addItem(2, 1, .turret, @as(*anyopaque, @ptrCast(t)));
 
@@ -138,15 +135,16 @@ pub fn main() !void {
         }
 
         for (g.items.items) |item| {
-            // std.debug.print("Enum: {d} {any}\n", .{ i, item });
-            switch (item) {
-                .turret => |gridTurret| {
-                    drawTurret(render, gridTurret, baseColor);
-                },
-                .enemy => |gridEnemy| {
-                    drawEnemy(render, gridEnemy, baseColor);
-                },
-                .empty => {},
+            if (item) |item_ptr| {
+                // std.debug.print("Enum: {d} {any}\n", .{ i, item });
+                switch (item_ptr) {
+                    .turret => |gridTurret| {
+                        drawTurret(render, gridTurret, baseColor);
+                    },
+                    .enemy => |gridEnemy| {
+                        drawEnemy(render, gridEnemy, baseColor);
+                    },
+                }
             }
         }
 
@@ -161,10 +159,10 @@ pub fn main() !void {
 
         if (Input.isMouseBntPressed(input.MouseBntEnum.Left)) {
             const mousePoint = Input.getMousePoint();
-            std.debug.print("Mouse point: {any}\n", .{mousePoint});
+            // std.debug.print("Mouse point: {any}\n", .{mousePoint});
 
             if (g.worldToGrid(mousePoint, gridOffset, cellSize)) |p| {
-                std.debug.print("Grid point: {any}\n", .{p});
+                // std.debug.print("Grid point: {any}\n", .{p});
 
                 const box = utils.Rectangle{
                     .x = (p.x + 1) * cellSize - 16,
@@ -181,7 +179,11 @@ pub fn main() !void {
 
                 // TODO: Check how the array is updated
                 std.debug.print("Grid items len: {d}\n", .{g.items.items.len});
-                std.debug.print("Grid items: {any}\n", .{g.items.items});
+                for (g.items.items, 0..) |item, idx| {
+                    if (item) |item_ptr| {
+                        std.debug.print("[{d}]Grid items: {any}\n", .{ idx, item_ptr });
+                    }
+                }
             }
         }
     }
