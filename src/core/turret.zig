@@ -1,4 +1,5 @@
 const std = @import("std");
+const Allocator = std.heap.page_allocator;
 
 const timestamp = std.time.timestamp;
 
@@ -18,6 +19,7 @@ pub const Turret = struct {
     attackDelay: i64,
     attackTime: i64,
 
+    // Create on the stack
     pub fn new(box: utils.Rectangle) Turret {
         const attackTime = timestamp();
 
@@ -26,6 +28,18 @@ pub const Turret = struct {
             .attackDelay = 1,
             .attackTime = attackTime,
         };
+    }
+
+    // Allocate on the heap
+    pub fn init(box: utils.Rectangle) !*Turret {
+        var turretPtr = try Allocator.create(Turret);
+        const attackTime = timestamp();
+
+        turretPtr.entity = Entity.defaultTurret(box);
+        turretPtr.attackDelay = 1;
+        turretPtr.attackTime = attackTime;
+
+        return turretPtr;
     }
 
     pub fn copy(self: *Turret, other: Turret) void {
