@@ -47,8 +47,8 @@ pub fn main() !void {
         .w = 32,
         .h = 64,
     });
-    try g.addItem(1, 1, .enemy, @as(*anyopaque, @ptrCast(e)));
-    try g.addItem(2, 1, .turret, @as(*anyopaque, @ptrCast(t)));
+    g.addItem(1, 1, .enemy, @as(*anyopaque, @ptrCast(e)));
+    g.addItem(2, 1, .turret, @as(*anyopaque, @ptrCast(t)));
 
     // std.debug.print("Final grid:\n", .{});
     // for (g.items.items, 0..) |item, i| {
@@ -138,12 +138,8 @@ pub fn main() !void {
             if (item) |item_ptr| {
                 // std.debug.print("Enum: {d} {any}\n", .{ i, item });
                 switch (item_ptr) {
-                    .turret => |gridTurret| {
-                        drawTurret(render, gridTurret, baseColor);
-                    },
-                    .enemy => |gridEnemy| {
-                        drawEnemy(render, gridEnemy, baseColor);
-                    },
+                    .turret => |gridTurret| drawTurret(render, gridTurret, baseColor),
+                    .enemy => |gridEnemy| drawEnemy(render, gridEnemy, baseColor),
                 }
             }
         }
@@ -175,7 +171,7 @@ pub fn main() !void {
                 var tn_ptr = try allocator.create(turret.Turret);
                 tn_ptr.copy(turret.Turret.new(box));
 
-                try g.addItem(@as(usize, @intFromFloat(p.x)), @as(usize, @intFromFloat(p.y)), GridItemEnum.turret, @as(*anyopaque, @ptrCast(tn_ptr)));
+                g.addItem(@as(usize, @intFromFloat(p.x)), @as(usize, @intFromFloat(p.y)), GridItemEnum.turret, @as(*anyopaque, @ptrCast(tn_ptr)));
 
                 // TODO: Check how the array is updated
                 std.debug.print("Grid items len: {d}\n", .{g.items.items.len});
