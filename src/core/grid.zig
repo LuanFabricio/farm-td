@@ -62,11 +62,15 @@ pub const Grid = struct {
         return y * self.width + x;
     }
 
-    pub fn addItem(self: *Grid, x: usize, y: usize, itemType: GridItemEnum, item: *anyopaque) !void {
+    pub fn addItem(self: *Grid, x: usize, y: usize, itemType: GridItemEnum, item: *anyopaque) void {
         const idx = self.xyToIndex(x, y);
 
         if (idx > self.items.items.len) {
-            return error.ItemOutOfBounds;
+            return;
+        }
+
+        if (self.items.items[idx]) |_| {
+            return;
         }
 
         const gridItem = switch (itemType) {
