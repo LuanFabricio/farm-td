@@ -51,7 +51,7 @@ test "It should add an item" {
 
     g.addItem(3, 3, GridItemEnum.turret, @as(*anyopaque, @ptrCast(t)));
 
-    const itemT = g.getItem(3, 3);
+    const itemT = try g.getItem(3, 3);
     if (itemT) |item| {
         try expect(item == GridItemEnum.turret);
         const t2 = item.turret;
@@ -68,7 +68,7 @@ test "It should add an item" {
     });
     g.addItem(4, 4, GridItemEnum.enemy, @as(*anyopaque, @ptrCast(e)));
 
-    const itemE = g.getItem(4, 4);
+    const itemE = try g.getItem(4, 4);
     if (itemE) |item| {
         try expect(item == GridItemEnum.enemy);
         const e2 = item.enemy;
@@ -89,7 +89,7 @@ test "It should get an item" {
         .h = 32,
     });
     g.addItem(3, 3, GridItemEnum.turret, @as(*anyopaque, @ptrCast(t)));
-    const itemT = g.getItem(3, 3);
+    const itemT = try g.getItem(3, 3);
 
     if (itemT) |item| {
         const t2 = item.turret;
@@ -105,7 +105,7 @@ test "It should get an item" {
         .h = 32,
     });
     g.addItem(4, 4, GridItemEnum.enemy, @as(*anyopaque, @ptrCast(e)));
-    const itemE = g.getItem(4, 4);
+    const itemE = try g.getItem(4, 4);
 
     if (itemE) |item| {
         const e2 = item.enemy;
