@@ -9,20 +9,10 @@ const Turret = @import("turret.zig").Turret;
 const Enemy = @import("enemy.zig").Enemy;
 const Entity = @import("entity.zig").Entity;
 
-pub const GridItemEnum = enum(u8) {
-    enemy = 0,
-    turret = 1,
-};
-
-pub const GridItem = union(GridItemEnum) {
-    enemy: *Enemy,
-    turret: *Turret,
-};
-
 pub const Grid = struct {
     width: usize,
     height: usize,
-    items: ArrayList(?GridItem),
+    items: ArrayList(?*Turret),
 
     pub fn init(width: usize, height: usize) !Grid {
         const len = width * height;
@@ -30,7 +20,7 @@ pub const Grid = struct {
         var g = Grid{
             .width = width,
             .height = height,
-            .items = ArrayList(?GridItem).init(allocator),
+            .items = ArrayList(?*Turret).init(allocator),
         };
         try g.items.resize(len);
 
@@ -43,18 +33,6 @@ pub const Grid = struct {
     }
 
     pub fn deinit(self: *const Grid) void {
-        for (self.items.items) |item| {
-            if (item) |item_ptr| {
-                switch (item_ptr) {
-                    GridItemEnum.turret => |turret| allocator.destroy(turret),
-                    GridItemEnum.enemy => |enemy| {
-                        enemy.deinit();
-                        allocator.destroy(enemy);
-                    },
-                }
-            }
-        }
-
         self.items.deinit();
     }
 
@@ -62,7 +40,7 @@ pub const Grid = struct {
         return y * self.width + x;
     }
 
-    pub fn addItem(self: *Grid, x: usize, y: usize, itemType: GridItemEnum, item: *anyopaque) void {
+    pub fn addItem(self: *Grid, x: usize, y: usize, turret: *Turret) void {
         const idx = self.xyToIndex(x, y);
 
         if (idx > self.items.items.len) {
@@ -73,15 +51,10 @@ pub const Grid = struct {
             return;
         }
 
-        const gridItem = switch (itemType) {
-            .turret => GridItem{ .turret = @as(*Turret, @ptrCast(@alignCast(item))) },
-            .enemy => GridItem{ .enemy = @as(*Enemy, @ptrCast(@alignCast(item))) },
-        };
-
-        self.items.items[idx] = gridItem;
+        self.items.items[idx] = turret;
     }
 
-    pub fn getItem(self: *Grid, x: usize, y: usize) !?GridItem {
+    pub fn getItem(self: *Grid, x: usize, y: usize) !?*Turret {
         const idx = self.xyToIndex(x, y);
 
         if (idx > self.items.items.len) {
