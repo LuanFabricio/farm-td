@@ -40,6 +40,16 @@ pub const Grid = struct {
         return y * self.width + x;
     }
 
+    pub fn indexToXY(self: *Grid, idx: usize) utils.Point {
+        const y: usize = idx / self.width;
+        const x: usize = idx % self.width;
+
+        return utils.Point{
+            .x = @as(f32, @floatFromInt(x)),
+            .y = @as(f32, @floatFromInt(y)),
+        };
+    }
+
     pub fn addItem(self: *Grid, x: usize, y: usize, turret: *Turret) void {
         const idx = self.xyToIndex(x, y);
 
@@ -79,5 +89,15 @@ pub const Grid = struct {
         gridPoint.y = @divFloor(gridPoint.y, cellSize);
 
         return gridPoint;
+    }
+
+    pub fn gridToWorld(_: *const Grid, gridPoint: utils.Point, offset: utils.Point, gridSize: usize) utils.Point {
+        const x = gridPoint.x * @as(f32, @floatFromInt(gridSize)) + offset.x;
+        const y = gridPoint.y * @as(f32, @floatFromInt(gridSize)) + offset.y;
+
+        return utils.Point{
+            .x = x,
+            .y = y,
+        };
     }
 };
