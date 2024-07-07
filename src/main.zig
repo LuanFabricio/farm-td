@@ -19,49 +19,23 @@ const input = @import("input/input.zig");
 const Input = input.Input;
 const KeyEnum = input.KeyEnum;
 
+const gameImport = @import("core/game.zig");
+const Game = gameImport.Game;
+
 pub fn main() !void {
-    var g = try Grid.init(5, 5);
-    defer g.deinit();
+    var game = try Game.init(5, 5);
+    defer game.deinit();
 
-    // std.debug.print("\nFresh grid:\n", .{});
-    // for (g.items.items, 0..) |item, i| {
-    //     const str = switch (item) {
-    //         .turret => "turret",
-    //         .enemy => "enemy",
-    //         .empty => "empty",
-    //     };
-    //     std.debug.print("\t[{d}]: {s}\n", .{ i, str });
-    // }
-
-    // TODO: Move entity position to grid
-    const t = try turret.Turret.init(utils.Rectangle{
-        .x = 400,
-        .y = 300,
+    const turretPtr = try turret.Turret.init();
+    const enemyPtr = try enemy.Enemy.init(.{
+        .x = 16,
+        .y = 64 * 3 + 16,
         .w = 32,
         .h = 64,
     });
 
-    var e = try enemy.Enemy.init(utils.Rectangle{
-        .x = 200,
-        .y = 300,
-        .w = 32,
-        .h = 64,
-    });
-    g.addItem(1, 1, .enemy, @as(*anyopaque, @ptrCast(e)));
-    g.addItem(2, 1, .turret, @as(*anyopaque, @ptrCast(t)));
-
-    // std.debug.print("Final grid:\n", .{});
-    // for (g.items.items, 0..) |item, i| {
-    //     switch (item) {
-    //         .turret => std.debug.print("\t[{d}]: turret\n", .{i}),
-    //         .enemy => std.debug.print("\t[{d}]: enemy\n", .{i}),
-    //         .empty => {},
-    //     }
-    // }
-
-    try e.addObserver(t);
-
-    e.notifyAll();
+    try game.addEnemy(enemyPtr);
+    try game.addTurret(4, 2, turretPtr);
 
     const stdout = std.io.getStdOut().writer();
     try stdout.writeAll("Hello world!\n");
@@ -102,6 +76,9 @@ pub fn main() !void {
         .a = 0xff,
     };
 
+    const gridOffset = utils.Point{ .x = 64, .y = 64 };
+    const gridSize = 128;
+
     while (render.shouldRender()) {
         render.beginDraw();
         defer render.endDraw();
@@ -134,48 +111,42 @@ pub fn main() !void {
             xSpeed += speed;
         }
 
-        for (g.items.items) |item| {
-            if (item) |item_ptr| {
-                // std.debug.print("Enum: {d} {any}\n", .{ i, item });
-                switch (item_ptr) {
-                    .turret => |gridTurret| drawTurret(render, gridTurret, baseColor),
-                    .enemy => |gridEnemy| drawEnemy(render, gridEnemy, baseColor),
-                }
+        for (game.enemies.items) |currentEnemy| {
+            drawEnemy(render, currentEnemy, baseColor);
+        }
+
+        for (game.grid.items.items, 0..) |currentItem, idx| {
+            if (currentItem) |currentTurret| {
+                const turretPoint = game.grid.indexToXY(idx);
+                drawTurret(render, &game.grid, turretPoint, gridOffset, gridSize, currentTurret, baseColor);
             }
         }
 
-        const gridOffset = utils.Point{ .x = 64, .y = 64 };
-        const cellSize = 128;
-        drawGrid(render, g, gridOffset, cellSize);
+        drawGrid(render, game.grid, gridOffset, gridSize);
 
         const frameTime = render.getFrameTime();
         rect.x += xSpeed * frameTime;
         rect.y += ySpeed * frameTime;
-        e.move(frameTime);
+
+        for (game.enemies.items) |currentEnemy| {
+            currentEnemy.move(frameTime);
+        }
 
         if (Input.isMouseBntPressed(input.MouseBntEnum.Left)) {
             const mousePoint = Input.getMousePoint();
             // std.debug.print("Mouse point: {any}\n", .{mousePoint});
 
-            if (g.worldToGrid(mousePoint, gridOffset, cellSize)) |p| {
-                // std.debug.print("Grid point: {any}\n", .{p});
+            if (game.grid.worldToGrid(mousePoint, gridOffset, gridSize)) |p| {
+                var newTurretPtr = try allocator.create(turret.Turret);
+                newTurretPtr.copy(turret.Turret.new());
 
-                const box = utils.Rectangle{
-                    .x = (p.x + 1) * cellSize - 16,
-                    .y = (p.y + 1) * cellSize - 24,
-                    .w = 32,
-                    .h = 64,
-                };
-                // Maybe move to heap
-                // var tn = turret.Turret.new(box);
-                var tn_ptr = try allocator.create(turret.Turret);
-                tn_ptr.copy(turret.Turret.new(box));
-
-                g.addItem(@as(usize, @intFromFloat(p.x)), @as(usize, @intFromFloat(p.y)), GridItemEnum.turret, @as(*anyopaque, @ptrCast(tn_ptr)));
+                const x: usize = @intFromFloat(p.x);
+                const y: usize = @intFromFloat(p.y);
+                try game.addTurret(x, y, newTurretPtr);
 
                 // TODO: Check how the array is updated
-                std.debug.print("Grid items len: {d}\n", .{g.items.items.len});
-                for (g.items.items, 0..) |item, idx| {
+                std.debug.print("Grid items len: {d}\n", .{game.grid.items.items.len});
+                for (game.grid.items.items, 0..) |item, idx| {
                     if (item) |item_ptr| {
                         std.debug.print("[{d}]Grid items: {any}\n", .{ idx, item_ptr });
                     }
@@ -194,24 +165,48 @@ fn displayHealth(render: Render, baseRect: utils.Rectangle, baseColor: utils.Col
     render.drawRectangleRect(healthRect, healthColor);
 }
 
-fn drawTurret(render: Render, t: *const turret.Turret, baseColor: utils.Color) void {
-    render.drawRectangleRect(t.entity.box, turret.DEFAULT_COLOR);
+fn drawTurret(render: Render, g: *const Grid, gridPoint: utils.Point, offset: utils.Point, gridSize: usize, t: *turret.Turret, baseColor: utils.Color) void {
+    const turretCenter = g.gridToWorld(gridPoint, offset, gridSize);
+    const turretRect = utils.Rectangle{
+        .x = turretCenter.x + @as(f32, @floatFromInt(gridSize / 2)) - 16,
+        .y = turretCenter.y + 32,
+        .w = 32,
+        .h = 64,
+    };
 
-    const turretRect = t.entity.getHealthRect();
+    render.drawRectangleRect(turretRect, turret.DEFAULT_COLOR);
+
+    const turretHealthRect = getHealthRect(turretRect);
     const turretHpP: f32 = t.entity.healthPercentage();
     const healthColor = utils.Color{ .r = 255, .g = 0, .b = 0, .a = 255 };
 
-    displayHealth(render, turretRect, baseColor, healthColor, turretHpP);
+    displayHealth(render, turretHealthRect, baseColor, healthColor, turretHpP);
 }
 
 fn drawEnemy(render: Render, e: *const enemy.Enemy, baseColor: utils.Color) void {
-    render.drawRectangleRect(e.entity.box, enemy.DEFAULT_COLOR);
+    render.drawRectangleRect(e.box, enemy.DEFAULT_COLOR);
 
-    const enemyRect = e.entity.getHealthRect();
+    const enemyRect = getHealthRect(e.box);
     const enemyHpP: f32 = e.entity.healthPercentage();
     const healthColor = utils.Color{ .r = 255, .g = 0, .b = 0, .a = 255 };
 
     displayHealth(render, enemyRect, baseColor, healthColor, enemyHpP);
+}
+
+fn getHealthRect(rect: utils.Rectangle) utils.Rectangle {
+    const center = rect.getCenter();
+    var r = utils.Rectangle{
+        .x = center.x,
+        .y = center.y,
+        .w = rect.w,
+        .h = 10,
+    };
+    const yPadding = r.h / 2 - 15;
+
+    r.x = center.x - r.w / 2;
+    r.y -= yPadding;
+
+    return r;
 }
 
 fn drawGrid(render: Render, g: Grid, offset: utils.Point, gridSize: f32) void {
