@@ -8,15 +8,8 @@ const Entity = @import("entity.zig").Entity;
 
 const grid = @import("grid.zig");
 const Grid = grid.Grid;
-const GridItem = grid.GridItem;
-const GridItemEnum = grid.GridItemEnum;
 
 fn compareEntities(e1: Entity, e2: Entity) !void {
-    try expect(e1.box.x == e2.box.x);
-    try expect(e1.box.y == e2.box.y);
-    try expect(e1.box.w == e2.box.w);
-    try expect(e1.box.h == e2.box.h);
-
     try expect(e1.status.health == e2.status.health);
     try expect(e1.status.attack == e2.status.attack);
     try expect(e1.status.range == e2.status.range);
@@ -42,37 +35,13 @@ test "It should add an item" {
     var g = try Grid.init(32, 32);
     defer g.deinit();
 
-    const t = try Turret.init(.{
-        .x = 42,
-        .y = 42,
-        .w = 32,
-        .h = 32,
-    });
+    const t = try Turret.init();
 
-    g.addItem(3, 3, GridItemEnum.turret, @as(*anyopaque, @ptrCast(t)));
+    g.addItem(3, 3, t);
 
     const itemT = try g.getItem(3, 3);
     if (itemT) |item| {
-        try expect(item == GridItemEnum.turret);
-        const t2 = item.turret;
-        try compareEntities(t.entity, t2.entity);
-    } else {
-        try expect(false);
-    }
-
-    const e = try Enemy.init(.{
-        .x = 42,
-        .y = 42,
-        .w = 32,
-        .h = 32,
-    });
-    g.addItem(4, 4, GridItemEnum.enemy, @as(*anyopaque, @ptrCast(e)));
-
-    const itemE = try g.getItem(4, 4);
-    if (itemE) |item| {
-        try expect(item == GridItemEnum.enemy);
-        const e2 = item.enemy;
-        try compareEntities(e.entity, e2.entity);
+        try compareEntities(t.entity, item.entity);
     } else {
         try expect(false);
     }
@@ -82,34 +51,12 @@ test "It should get an item" {
     var g = try Grid.init(32, 32);
     defer g.deinit();
 
-    const t = try Turret.init(utils.Rectangle{
-        .x = 42,
-        .y = 42,
-        .w = 32,
-        .h = 32,
-    });
-    g.addItem(3, 3, GridItemEnum.turret, @as(*anyopaque, @ptrCast(t)));
+    const t = try Turret.init();
+    g.addItem(3, 3, t);
     const itemT = try g.getItem(3, 3);
 
-    if (itemT) |item| {
-        const t2 = item.turret;
+    if (itemT) |t2| {
         try compareEntities(t.entity, t2.entity);
-    } else {
-        try expect(false);
-    }
-
-    const e = try Enemy.init(utils.Rectangle{
-        .x = 42,
-        .y = 42,
-        .w = 32,
-        .h = 32,
-    });
-    g.addItem(4, 4, GridItemEnum.enemy, @as(*anyopaque, @ptrCast(e)));
-    const itemE = try g.getItem(4, 4);
-
-    if (itemE) |item| {
-        const e2 = item.enemy;
-        try compareEntities(e.entity, e2.entity);
     } else {
         try expect(false);
     }
