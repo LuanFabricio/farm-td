@@ -23,19 +23,37 @@ const gameImport = @import("core/game.zig");
 const Game = gameImport.Game;
 
 pub fn main() !void {
+    const gridOffset = utils.Point{ .x = 64, .y = 64 };
+    const gridSize = 128;
+
     var game = try Game.init(5, 5);
     defer game.deinit();
 
     const turretPtr = try turret.Turret.init();
-    const enemyPtr = try enemy.Enemy.init(.{
-        .x = 16,
-        .y = 64 * 3 + 16,
+    // const enemyPtr = try enemy.Enemy.init(.{
+    //     .x = 16,
+    //     .y = 64 * 3 + 32,
+    //     .w = 32,
+    //     .h = 64,
+    // });
+
+    // try game.addEnemy(enemyPtr);
+    try game.addTurret(4, 2, turretPtr);
+
+    const spawnerBase = utils.Rectangle{
+        .x = 0,
+        .y = gridOffset.y + 32,
         .w = 32,
         .h = 64,
-    });
+    };
 
-    try game.addEnemy(enemyPtr);
-    try game.addTurret(4, 2, turretPtr);
+    for (3..game.grid.height) |i| {
+        var spawnerBox: utils.Rectangle = undefined;
+        spawnerBox.copy(spawnerBase);
+        spawnerBox.y += @as(f32, @floatFromInt(i)) * gridSize;
+
+        try game.addEnemySpawn(enemy.EnemySpawner.new(180, spawnerBox));
+    }
 
     const stdout = std.io.getStdOut().writer();
     try stdout.writeAll("Hello world!\n");
@@ -76,10 +94,9 @@ pub fn main() !void {
         .a = 0xff,
     };
 
-    const gridOffset = utils.Point{ .x = 64, .y = 64 };
-    const gridSize = 128;
-
     while (render.shouldRender()) {
+        try game.spawnEnemies();
+
         render.beginDraw();
         defer render.endDraw();
 
@@ -153,6 +170,7 @@ pub fn main() !void {
                 }
             }
         }
+        try game.turretShoot(gridOffset, gridSize);
     }
 }
 
