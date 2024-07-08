@@ -62,6 +62,15 @@ pub const Turret = struct {
         return now >= self.attackTime;
     }
 
+    pub fn attackEntity(self: *const Turret, otherEntity: *Entity) void {
+        otherEntity.status.health -= self.entity.status.attack;
+    }
+
+    pub fn resetDelay(self: *Turret) void {
+        const now = timestamp();
+        self.attackTime = now + self.attackDelay;
+    }
+
     pub fn observer(_: *Turret, _: *Entity) void {
         // const enemyCenter = entity.box.getCenter();
         // const selfCenter = self.entity.box.getCenter();

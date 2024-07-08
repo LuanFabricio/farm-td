@@ -72,9 +72,8 @@ pub const Game = struct {
 
                     // TODO: Maybe move to nearest enemy approach
                     if (turret.shouldAttack(turretPosition, enemyCenter)) {
-                        enemy.entity.status.health -= turret.entity.status.attack;
-                        const now = timestamp();
-                        turret.attackTime = now + turret.attackDelay;
+                        turret.attackEntity(&enemy.entity);
+                        turret.resetDelay();
                         break;
                     }
                 }
