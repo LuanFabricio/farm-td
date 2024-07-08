@@ -66,16 +66,14 @@ pub const Game = struct {
                 turretPosition.x = turretPosition.x * gridSize + offset.x;
                 turretPosition.y = turretPosition.y * gridSize + offset.y;
 
-                const range = turret.entity.status.range;
                 for (self.enemies.items) |enemy| {
                     if (enemy.entity.status.health <= 0) continue;
                     const enemyCenter = enemy.box.getCenter();
-                    const dist = turretPosition.calcDist(&enemyCenter);
 
                     // TODO: Maybe move to nearest enemy approach
-                    const now = timestamp();
-                    if (dist <= range and now >= turret.attackTime) {
+                    if (turret.shouldAttack(turretPosition, enemyCenter)) {
                         enemy.entity.status.health -= turret.entity.status.attack;
+                        const now = timestamp();
                         turret.attackTime = now + turret.attackDelay;
                         break;
                     }

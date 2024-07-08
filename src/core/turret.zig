@@ -48,6 +48,20 @@ pub const Turret = struct {
         self.attackDelay = other.attackDelay;
     }
 
+    pub fn shouldAttack(self: *const Turret, turretPosition: utils.Point, otherPosition: utils.Point) bool {
+        return self.otherOnRange(turretPosition, otherPosition) and self.canAttack();
+    }
+
+    fn otherOnRange(self: *const Turret, turretPos: utils.Point, otherPos: utils.Point) bool {
+        const dist = turretPos.calcDist(&otherPos);
+        return dist <= self.entity.status.range;
+    }
+
+    fn canAttack(self: *const Turret) bool {
+        const now = timestamp();
+        return now >= self.attackTime;
+    }
+
     pub fn observer(_: *Turret, _: *Entity) void {
         // const enemyCenter = entity.box.getCenter();
         // const selfCenter = self.entity.box.getCenter();
