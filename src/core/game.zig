@@ -80,4 +80,16 @@ pub const Game = struct {
             }
         }
     }
+
+    pub fn cleanDeadEnemies(self: *Game) void {
+        var i: usize = 0;
+        while (i < self.enemies.items.len) : (i += 1) {
+            if (self.enemies.items[i].entity.status.health <= 0) {
+                const enemyPtr = self.enemies.swapRemove(i);
+
+                Allocator.destroy(enemyPtr);
+                if (i > 0) i -= 1;
+            }
+        }
+    }
 };

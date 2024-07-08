@@ -170,7 +170,10 @@ pub fn main() !void {
                 }
             }
         }
+
         try game.turretShoot(gridOffset, gridSize);
+
+        game.cleanDeadEnemies();
     }
 }
 
