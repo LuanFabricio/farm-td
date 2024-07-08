@@ -70,33 +70,23 @@ pub const Enemy = struct {
 pub const EnemySpawner = struct {
     delay: i64,
     spawnTime: i64,
+    baseBox: utils.Rectangle,
 
-    pub fn new(delay: i64) EnemySpawner {
-        const now = timestamp();
-
+    pub fn new(delay: i64, baseBox: utils.Rectangle) EnemySpawner {
         return EnemySpawner{
             .delay = delay,
-            .spawTime = now,
+            .spawnTime = timestamp(),
+            .baseBox = baseBox,
         };
     }
 
-    pub fn spawn(self: *EnemySpawner, grid: *Grid) void {
+    pub fn spawn(self: *EnemySpawner) !?*Enemy {
         const now = timestamp();
         if (self.spawnTime > now) {
-            return;
+            return null;
         }
-        const x = 4;
-        const y = 4;
-
         self.spawnTime = now + self.delay;
 
-        const rect = utils.Rectangle{
-            .x = 200,
-            .y = 300,
-            .w = 32,
-            .h = 64,
-        };
-        const enemy = try Enemy.init(rect);
-        grid.addItem(x, y, GridItemEnum.enemy, @as(*anyopaque, @ptrCast(enemy)));
+        return try Enemy.init(self.baseBox);
     }
 };
