@@ -40,7 +40,7 @@ pub const Grid = struct {
         return y * self.width + x;
     }
 
-    pub fn indexToXY(self: *Grid, idx: usize) utils.Point {
+    pub fn indexToXY(self: *const Grid, idx: usize) utils.Point {
         const y: usize = idx / self.width;
         const x: usize = idx % self.width;
 
