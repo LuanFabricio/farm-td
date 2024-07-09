@@ -22,10 +22,10 @@ const KeyEnum = input.KeyEnum;
 const gameImport = @import("core/game.zig");
 const Game = gameImport.Game;
 
-pub fn main() !void {
-    const gridOffset = utils.Point{ .x = 64, .y = 64 };
-    const gridSize = 128;
+const gridOffset = utils.Point{ .x = 64, .y = 64 };
+const gridSize = 128;
 
+pub fn main() !void {
     var game = try Game.init(5, 5);
     defer game.deinit();
 
@@ -52,7 +52,7 @@ pub fn main() !void {
         spawnerBox.copy(spawnerBase);
         spawnerBox.y += @as(f32, @floatFromInt(i)) * gridSize;
 
-        try game.addEnemySpawn(enemy.EnemySpawner.new(180, spawnerBox));
+        try game.addEnemySpawn(enemy.EnemySpawner.new(30, spawnerBox));
     }
 
     const stdout = std.io.getStdOut().writer();
@@ -61,89 +61,12 @@ pub fn main() !void {
     var render = Render.init();
     defer render.deinit();
 
-    var rect = utils.Rectangle{
-        .x = 42,
-        .y = 42,
-        .w = 128,
-        .h = 128,
-    };
-    const color = utils.Color{
-        .r = 0x19,
-        .g = 0x19,
-        .b = 0xff,
-        .a = 0xff,
-    };
-
-    // NOTE: For health example
-    const baseRect: utils.Rectangle = .{
-        .x = 500,
-        .y = 500,
-        .w = 400,
-        .h = 100,
-    };
-    const baseColor = utils.Color{
-        .r = 0xaa,
-        .g = 0xaa,
-        .b = 0xaa,
-        .a = 0xff,
-    };
-    const healthColor = utils.Color{
-        .r = 0xff,
-        .g = 0x00,
-        .b = 0x00,
-        .a = 0xff,
-    };
-
     while (render.shouldRender()) {
         try game.spawnEnemies();
 
-        render.beginDraw();
-        defer render.endDraw();
-
-        render.drawRectangleRect(rect, color);
-
-        displayHealth(render, baseRect, baseColor, healthColor, 0.32);
-
-        // render.drawRectangleRect(e.entity.box, enemy.DEFAULT_COLOR);
-
-        // render.drawRectangleRect(t.entity.box, turret.DEFAULT_COLOR);
-        // const turretRect = t.entity.getHealthRect();
-        // const turretHpP: f32 = t.entity.healthPercentage();
-        // displayHealth(render, turretRect, baseColor, healthColor, turretHpP);
-
-        const speed = rect.w;
-        var ySpeed: f32 = 0;
-        var xSpeed: f32 = 0;
-
-        if (Input.isKeyDown(.Up)) {
-            ySpeed -= speed;
-        }
-        if (Input.isKeyDown(.Down)) {
-            ySpeed += speed;
-        }
-        if (Input.isKeyDown(.Left)) {
-            xSpeed -= speed;
-        }
-        if (Input.isKeyDown(.Right)) {
-            xSpeed += speed;
-        }
-
-        for (game.enemies.items) |currentEnemy| {
-            drawEnemy(render, currentEnemy, baseColor);
-        }
-
-        for (game.grid.items.items, 0..) |currentItem, idx| {
-            if (currentItem) |currentTurret| {
-                const turretPoint = game.grid.indexToXY(idx);
-                drawTurret(render, &game.grid, turretPoint, gridOffset, gridSize, currentTurret, baseColor);
-            }
-        }
-
-        drawGrid(render, game.grid, gridOffset, gridSize);
+        drawScene(render, &game);
 
         const frameTime = render.getFrameTime();
-        rect.x += xSpeed * frameTime;
-        rect.y += ySpeed * frameTime;
 
         for (game.enemies.items) |currentEnemy| {
             currentEnemy.move(frameTime);
@@ -177,6 +100,37 @@ pub fn main() !void {
     }
 }
 
+fn drawScene(render: Render, game: *const Game) void {
+    const baseColor = utils.Color{
+        .r = 0xaa,
+        .g = 0xaa,
+        .b = 0xaa,
+        .a = 0xff,
+    };
+    // const healthColor = utils.Color{
+    //     .r = 0xff,
+    //     .g = 0x00,
+    //     .b = 0x00,
+    //     .a = 0xff,
+    // };
+
+    render.beginDraw();
+    defer render.endDraw();
+
+    for (game.enemies.items) |currentEnemy| {
+        drawEnemy(render, currentEnemy, baseColor);
+    }
+
+    for (game.grid.items.items, 0..) |currentItem, idx| {
+        if (currentItem) |currentTurret| {
+            const turretPoint = game.grid.indexToXY(idx);
+            drawTurret(render, &game.grid, turretPoint, currentTurret, baseColor);
+        }
+    }
+
+    drawGrid(render, game.grid);
+}
+
 fn displayHealth(render: Render, baseRect: utils.Rectangle, baseColor: utils.Color, healthColor: utils.Color, percentage: f32) void {
     var healthRect = baseRect.clone();
     healthRect.w = baseRect.w * percentage;
@@ -186,8 +140,8 @@ fn displayHealth(render: Render, baseRect: utils.Rectangle, baseColor: utils.Col
     render.drawRectangleRect(healthRect, healthColor);
 }
 
-fn drawTurret(render: Render, g: *const Grid, gridPoint: utils.Point, offset: utils.Point, gridSize: usize, t: *turret.Turret, baseColor: utils.Color) void {
-    const turretCenter = g.gridToWorld(gridPoint, offset, gridSize);
+fn drawTurret(render: Render, g: *const Grid, gridPoint: utils.Point, t: *turret.Turret, baseColor: utils.Color) void {
+    const turretCenter = g.gridToWorld(gridPoint, gridOffset, gridSize);
     const turretRect = utils.Rectangle{
         .x = turretCenter.x + @as(f32, @floatFromInt(gridSize / 2)) - 16,
         .y = turretCenter.y + 32,
@@ -230,15 +184,15 @@ fn getHealthRect(rect: utils.Rectangle) utils.Rectangle {
     return r;
 }
 
-fn drawGrid(render: Render, g: Grid, offset: utils.Point, gridSize: f32) void {
-    const worldWidth: f32 = offset.x + @as(f32, @floatFromInt(g.width)) * gridSize;
-    const worldHeight: f32 = offset.y + @as(f32, @floatFromInt(g.height)) * gridSize;
+fn drawGrid(render: Render, g: Grid) void {
+    const worldWidth: f32 = gridOffset.x + @as(f32, @floatFromInt(g.width)) * gridSize;
+    const worldHeight: f32 = gridOffset.y + @as(f32, @floatFromInt(g.height)) * gridSize;
     const lineColor = utils.Color{ .r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff };
 
     var i: usize = 0;
 
-    var p1 = utils.Point{ .x = offset.x, .y = offset.y };
-    var p2 = utils.Point{ .x = worldWidth, .y = offset.y };
+    var p1 = utils.Point{ .x = gridOffset.x, .y = gridOffset.y };
+    var p2 = utils.Point{ .x = worldWidth, .y = gridOffset.y };
     while (i < g.height + 1) : (i += 1) {
         render.drawLineP(p1, p2, lineColor);
         p1.y += gridSize;
@@ -247,8 +201,8 @@ fn drawGrid(render: Render, g: Grid, offset: utils.Point, gridSize: f32) void {
 
     i = 0;
 
-    p1 = utils.Point{ .x = offset.x, .y = offset.y };
-    p2 = utils.Point{ .x = offset.x, .y = worldHeight };
+    p1 = utils.Point{ .x = gridOffset.x, .y = gridOffset.y };
+    p2 = utils.Point{ .x = gridOffset.x, .y = worldHeight };
     while (i < g.width + 1) : (i += 1) {
         render.drawLineP(p1, p2, lineColor);
         p1.x += gridSize;
