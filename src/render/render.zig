@@ -53,7 +53,7 @@ pub const Render = struct {
         Raylib.DrawLineV(p1RayVec2, p2RayVec2, rayColor);
     }
 
-    pub fn getFrameTime(_: *Render) f32 {
+    pub fn getFrameTime(_: *const Render) f32 {
         return Raylib.GetFrameTime();
     }
 };
