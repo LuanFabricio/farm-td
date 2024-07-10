@@ -62,41 +62,8 @@ pub fn main() !void {
     defer render.deinit();
 
     while (render.shouldRender()) {
-        try game.spawnEnemies();
-
         drawScene(render, &game);
-
-        const frameTime = render.getFrameTime();
-
-        for (game.enemies.items) |currentEnemy| {
-            currentEnemy.move(frameTime);
-        }
-
-        if (Input.isMouseBntPressed(input.MouseBntEnum.Left)) {
-            const mousePoint = Input.getMousePoint();
-            // std.debug.print("Mouse point: {any}\n", .{mousePoint});
-
-            if (game.grid.worldToGrid(mousePoint, gridOffset, gridSize)) |p| {
-                var newTurretPtr = try allocator.create(turret.Turret);
-                newTurretPtr.copy(turret.Turret.new());
-
-                const x: usize = @intFromFloat(p.x);
-                const y: usize = @intFromFloat(p.y);
-                try game.addTurret(x, y, newTurretPtr);
-
-                // TODO: Check how the array is updated
-                std.debug.print("Grid items len: {d}\n", .{game.grid.items.items.len});
-                for (game.grid.items.items, 0..) |item, idx| {
-                    if (item) |item_ptr| {
-                        std.debug.print("[{d}]Grid items: {any}\n", .{ idx, item_ptr });
-                    }
-                }
-            }
-        }
-
-        try game.turretShoot(gridOffset, gridSize);
-
-        game.cleanDeadEnemies();
+        updateScene(render, &game) catch |err| std.debug.print("Update error: {any}\n", .{err});
     }
 }
 
@@ -129,6 +96,32 @@ fn drawScene(render: Render, game: *const Game) void {
     }
 
     drawGrid(render, game.grid);
+}
+
+fn updateScene(render: Render, game: *Game) !void {
+    if (Input.isMouseBntPressed(input.MouseBntEnum.Left)) {
+        const mousePoint = Input.getMousePoint();
+        // std.debug.print("Mouse point: {any}\n", .{mousePoint});
+
+        if (game.grid.worldToGrid(mousePoint, gridOffset, gridSize)) |p| {
+            var newTurretPtr = try allocator.create(turret.Turret);
+            newTurretPtr.copy(turret.Turret.new());
+
+            const x: usize = @intFromFloat(p.x);
+            const y: usize = @intFromFloat(p.y);
+            try game.addTurret(x, y, newTurretPtr);
+        }
+    }
+
+    try game.spawnEnemies();
+
+    const frameTime = render.getFrameTime();
+    for (game.enemies.items) |currentEnemy| {
+        currentEnemy.move(frameTime);
+    }
+
+    try game.turretShoot(gridOffset, gridSize);
+    game.cleanDeadEnemies();
 }
 
 fn displayHealth(render: Render, baseRect: utils.Rectangle, baseColor: utils.Color, healthColor: utils.Color, percentage: f32) void {
