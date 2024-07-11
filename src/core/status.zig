@@ -8,4 +8,8 @@ pub const Status = struct {
         self.attack = other.attack;
         self.range = other.range;
     }
+
+    pub fn isEqual(self: *const Status, other: Status) bool {
+        return self.health == other.health and self.attack == other.attack and self.range == other.range;
+    }
 };
