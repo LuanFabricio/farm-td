@@ -8,13 +8,8 @@ const entityImport = @import("entity.zig");
 const Entity = entityImport.Entity;
 
 fn checkEntities(e1: Entity, e2: Entity) !void {
-    try expect(e1.status.health == e2.status.health);
-    try expect(e1.status.attack == e2.status.attack);
-    try expect(e1.status.range == e2.status.range);
-
-    try expect(e1.defaultStatus.health == e2.defaultStatus.health);
-    try expect(e1.defaultStatus.attack == e2.defaultStatus.attack);
-    try expect(e1.defaultStatus.range == e2.defaultStatus.range);
+    try expect(e1.status.isEqual(e2.status));
+    try expect(e1.defaultStatus.isEqual(e2.defaultStatus));
 }
 
 test "Should copy an entity" {
