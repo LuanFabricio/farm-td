@@ -12,4 +12,5 @@ test "basic add functionality" {
 test {
     _ = @import("core/test_grid.zig");
     _ = @import("core/test_entity.zig");
+    _ = @import("core/test_status.zig");
 }
