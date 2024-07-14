@@ -1,4 +1,6 @@
 const std = @import("std");
+const Allocator = std.heap.page_allocator;
+
 const timestamp = std.time.timestamp;
 
 pub const Farm = struct {
@@ -8,14 +10,14 @@ pub const Farm = struct {
     delay: i64,
     goldTime: i64,
 
-    pub fn new(cost: u32, gain: u32, delay: i64) This {
-        const now = timestamp();
-        return This{
-            .cost = cost,
-            .gain = gain,
-            .delay = delay,
-            .goldTime = now,
-        };
+    pub fn init(cost: u32, gain: u32, delay: i64) !*This {
+        const farmPtr = try Allocator.create(This);
+        farmPtr.cost = cost;
+        farmPtr.gain = gain;
+        farmPtr.delay = delay;
+        farmPtr.goldTime = timestamp();
+
+        return farmPtr;
     }
 
     pub fn getGold(self: *This) ?u32 {
