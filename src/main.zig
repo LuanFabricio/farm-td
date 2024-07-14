@@ -13,6 +13,9 @@ const GridItem = grid.GridItem;
 const turret = @import("core/turret.zig");
 const enemy = @import("core/enemy.zig");
 
+const farmImport = @import("core/farm.zig");
+const Farm = farmImport.Farm;
+
 const Render = @import("render/render.zig").Render;
 
 const input = @import("input/input.zig");
@@ -21,6 +24,8 @@ const KeyEnum = input.KeyEnum;
 
 const gameImport = @import("core/game.zig");
 const Game = gameImport.Game;
+const TurretGrid = gameImport.TurretGrid;
+const FarmGrid = gameImport.FarmGrid;
 
 const gridOffset = utils.Point{ .x = 64, .y = 64 };
 const gridSize = 128;
@@ -28,6 +33,8 @@ const gridSize = 128;
 pub fn main() !void {
     var game = try Game.init(5, 5);
     defer game.deinit();
+
+    game.farmGrid.addItem(0, 0, try Farm.init(32, 16, 15));
 
     const turretPtr = try turret.Turret.init();
     // const enemyPtr = try enemy.Enemy.init(.{
@@ -47,7 +54,7 @@ pub fn main() !void {
         .h = 64,
     };
 
-    for (3..game.grid.height) |i| {
+    for (3..game.turretGrid.height) |i| {
         var spawnerBox: utils.Rectangle = undefined;
         spawnerBox.copy(spawnerBase);
         spawnerBox.y += @as(f32, @floatFromInt(i)) * gridSize;
@@ -88,14 +95,29 @@ fn drawScene(render: Render, game: *const Game) void {
         drawEnemy(render, currentEnemy, baseColor);
     }
 
-    for (game.grid.items.items, 0..) |currentItem, idx| {
+    for (game.turretGrid.getItems(), 0..) |currentItem, idx| {
         if (currentItem) |currentTurret| {
-            const turretPoint = game.grid.indexToXY(idx);
-            drawTurret(render, &game.grid, turretPoint, currentTurret, baseColor);
+            const turretPoint = game.turretGrid.indexToXY(idx);
+            drawTurret(render, &game.turretGrid, turretPoint, currentTurret, baseColor);
         }
     }
 
-    drawGrid(render, game.grid);
+    var farmRectangle = utils.Rectangle{
+        .x = 0,
+        .y = 128,
+        .w = 32,
+        .h = 64,
+    };
+    const farmColor = utils.Color{ .r = 0xff, .g = 0xff, .b = 0x00, .a = 0xff };
+    const farmItems = game.farmGrid.getItems();
+    for (farmItems, 0..) |item, idx| {
+        if (item) |_| {
+            farmRectangle.x = @as(f32, @floatFromInt(idx)) * 32 + 720;
+            render.drawRectangleRect(farmRectangle, farmColor);
+        }
+    }
+
+    drawGrid(render, game.turretGrid);
 }
 
 fn updateScene(render: Render, game: *Game) !void {
@@ -103,7 +125,7 @@ fn updateScene(render: Render, game: *Game) !void {
         const mousePoint = Input.getMousePoint();
         // std.debug.print("Mouse point: {any}\n", .{mousePoint});
 
-        if (game.grid.worldToGrid(mousePoint, gridOffset, gridSize)) |p| {
+        if (game.turretGrid.worldToGrid(mousePoint, gridOffset, gridSize)) |p| {
             var newTurretPtr = try allocator.create(turret.Turret);
             newTurretPtr.copy(turret.Turret.new());
 
@@ -133,7 +155,7 @@ fn displayHealth(render: Render, baseRect: utils.Rectangle, baseColor: utils.Col
     render.drawRectangleRect(healthRect, healthColor);
 }
 
-fn drawTurret(render: Render, g: *const Grid, gridPoint: utils.Point, t: *turret.Turret, baseColor: utils.Color) void {
+fn drawTurret(render: Render, g: *const TurretGrid, gridPoint: utils.Point, t: *turret.Turret, baseColor: utils.Color) void {
     const turretCenter = g.gridToWorld(gridPoint, gridOffset, gridSize);
     const turretRect = utils.Rectangle{
         .x = turretCenter.x + @as(f32, @floatFromInt(gridSize / 2)) - 16,
@@ -177,7 +199,7 @@ fn getHealthRect(rect: utils.Rectangle) utils.Rectangle {
     return r;
 }
 
-fn drawGrid(render: Render, g: Grid) void {
+fn drawGrid(render: Render, g: TurretGrid) void {
     const worldWidth: f32 = gridOffset.x + @as(f32, @floatFromInt(g.width)) * gridSize;
     const worldHeight: f32 = gridOffset.y + @as(f32, @floatFromInt(g.height)) * gridSize;
     const lineColor = utils.Color{ .r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff };
