@@ -17,7 +17,7 @@ fn compareEntities(e1: Entity, e2: Entity) !void {
 test "It should create a new Grid" {
     const w = 32;
     const h = 32;
-    const g = try Grid.init(w, h);
+    const g = try Grid(void).init(w, h);
     defer g.deinit();
 
     const len = w * h;
@@ -27,7 +27,7 @@ test "It should create a new Grid" {
 }
 
 test "It should add an item" {
-    var g = try Grid.init(32, 32);
+    var g = try Grid(Turret).init(32, 32);
     defer g.deinit();
 
     const t = try Turret.init();
@@ -43,7 +43,7 @@ test "It should add an item" {
 }
 
 test "It should get an item" {
-    var g = try Grid.init(32, 32);
+    var g = try Grid(Turret).init(32, 32);
     defer g.deinit();
 
     const t = try Turret.init();
@@ -58,7 +58,7 @@ test "It should get an item" {
 }
 
 test "It should map world point to grid" {
-    const g = try Grid.init(3, 4);
+    const g = try Grid(Turret).init(3, 4);
     defer g.deinit();
 
     // WorldSize = (30, 40)
