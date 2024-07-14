@@ -16,16 +16,24 @@ const EnemySpawner = enemyImport.EnemySpawner;
 const gridImport = @import("grid.zig");
 const Grid = gridImport.Grid;
 
+const farmImport = @import("farm.zig");
+const Farm = farmImport.Farm;
+
+pub const TurretGrid = Grid(Turret);
+pub const FarmGrid = Grid(Farm);
+
 pub const Game = struct {
     enemies: ArrayList(*Enemy),
     enemySpawners: ArrayList(EnemySpawner),
-    grid: Grid,
+    turretGrid: TurretGrid,
+    farmGrid: FarmGrid,
 
     pub fn init(width: usize, height: usize) !Game {
         return Game{
             .enemies = ArrayList(*Enemy).init(Allocator),
             .enemySpawners = ArrayList(EnemySpawner).init(Allocator),
-            .grid = try Grid.init(width, height),
+            .turretGrid = try TurretGrid.init(width, height),
+            .farmGrid = try FarmGrid.init(width, height),
         };
     }
 
@@ -35,7 +43,8 @@ pub const Game = struct {
         }
         self.enemies.deinit();
         self.enemySpawners.deinit();
-        self.grid.deinit();
+        self.farmGrid.deinit();
+        self.turretGrid.deinit();
     }
 
     pub fn addEnemySpawn(self: *Game, enemySpawn: EnemySpawner) !void {
@@ -47,7 +56,7 @@ pub const Game = struct {
     }
 
     pub fn addTurret(self: *Game, x: usize, y: usize, turret: *Turret) !void {
-        self.grid.addItem(x, y, turret);
+        self.turretGrid.addItem(x, y, turret);
     }
 
     pub fn spawnEnemies(self: *Game) !void {
@@ -60,9 +69,9 @@ pub const Game = struct {
     }
 
     pub fn turretShoot(self: *Game, offset: utils.Point, gridSize: f32) !void {
-        for (self.grid.items.items, 0..) |turretOption, idx| {
+        for (self.turretGrid.items.items, 0..) |turretOption, idx| {
             if (turretOption) |turret| {
-                var turretPosition = self.grid.indexToXY(idx);
+                var turretPosition = self.turretGrid.indexToXY(idx);
                 turretPosition.x = turretPosition.x * gridSize + offset.x;
                 turretPosition.y = turretPosition.y * gridSize + offset.y;
 
