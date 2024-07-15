@@ -71,6 +71,9 @@ pub fn main() !void {
     while (render.shouldRender()) {
         drawScene(render, &game);
         updateScene(render, &game) catch |err| std.debug.print("Update error: {any}\n", .{err});
+        try drawUI(render, &game);
+
+        game.farmGold();
     }
 }
 
@@ -144,6 +147,23 @@ fn updateScene(render: Render, game: *Game) !void {
 
     try game.turretShoot(gridOffset, gridSize);
     game.cleanDeadEnemies();
+}
+
+fn drawUI(render: Render, game: *const Game) !void {
+    const goldText = try std.fmt.allocPrintZ(allocator, "Gold: {d}", .{game.gold});
+    defer allocator.free(goldText);
+
+    const position = utils.Point{
+        .x = 128,
+        .y = 128,
+    };
+    const color = utils.Color{
+        .r = 0xff,
+        .g = 0xff,
+        .b = 0xff,
+        .a = 0xff,
+    };
+    render.drawText(goldText, 32, position, color);
 }
 
 fn displayHealth(render: Render, baseRect: utils.Rectangle, baseColor: utils.Color, healthColor: utils.Color, percentage: f32) void {
