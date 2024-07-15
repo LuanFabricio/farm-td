@@ -23,21 +23,25 @@ pub const TurretGrid = Grid(Turret);
 pub const FarmGrid = Grid(Farm);
 
 pub const Game = struct {
+    const This = @This();
+
     enemies: ArrayList(*Enemy),
     enemySpawners: ArrayList(EnemySpawner),
     turretGrid: TurretGrid,
     farmGrid: FarmGrid,
+    gold: u32,
 
-    pub fn init(width: usize, height: usize) !Game {
-        return Game{
+    pub fn init(width: usize, height: usize) !This {
+        return This{
             .enemies = ArrayList(*Enemy).init(Allocator),
             .enemySpawners = ArrayList(EnemySpawner).init(Allocator),
             .turretGrid = try TurretGrid.init(width, height),
             .farmGrid = try FarmGrid.init(width, height),
+            .gold = 0,
         };
     }
 
-    pub fn deinit(self: *Game) void {
+    pub fn deinit(self: *This) void {
         for (self.enemies.items) |enemyPtr| {
             Allocator.destroy(enemyPtr);
         }
@@ -47,19 +51,27 @@ pub const Game = struct {
         self.turretGrid.deinit();
     }
 
-    pub fn addEnemySpawn(self: *Game, enemySpawn: EnemySpawner) !void {
+    pub fn addEnemySpawn(self: *This, enemySpawn: EnemySpawner) !void {
         try self.enemySpawners.append(enemySpawn);
     }
 
-    pub fn addEnemy(self: *Game, enemy: *Enemy) !void {
+    pub fn addEnemy(self: *This, enemy: *Enemy) !void {
         try self.enemies.append(enemy);
     }
 
-    pub fn addTurret(self: *Game, x: usize, y: usize, turret: *Turret) !void {
+    pub fn addTurret(self: *This, x: usize, y: usize, turret: *Turret) !void {
         self.turretGrid.addItem(x, y, turret);
     }
 
-    pub fn spawnEnemies(self: *Game) !void {
+    pub fn farmGold(self: *This) void {
+        for (self.farmGrid.getItems()) |farm| {
+            if (farm == null) continue;
+
+            if (farm.?.getGold()) |g| self.gold += g;
+        }
+    }
+
+    pub fn spawnEnemies(self: *This) !void {
         for (self.enemySpawners.items) |*enemy| {
             const enempyOption = try enemy.spawn();
             if (enempyOption) |enemyPtr| {
@@ -68,7 +80,7 @@ pub const Game = struct {
         }
     }
 
-    pub fn turretShoot(self: *Game, offset: utils.Point, gridSize: f32) !void {
+    pub fn turretShoot(self: *This, offset: utils.Point, gridSize: f32) !void {
         for (self.turretGrid.items.items, 0..) |turretOption, idx| {
             if (turretOption) |turret| {
                 var turretPosition = self.turretGrid.indexToXY(idx);
@@ -90,7 +102,7 @@ pub const Game = struct {
         }
     }
 
-    pub fn cleanDeadEnemies(self: *Game) void {
+    pub fn cleanDeadEnemies(self: *This) void {
         var i: usize = 0;
         while (i < self.enemies.items.len) : (i += 1) {
             if (self.enemies.items[i].entity.status.health <= 0) {
