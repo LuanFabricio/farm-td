@@ -53,6 +53,14 @@ pub const Render = struct {
         Raylib.DrawLineV(p1RayVec2, p2RayVec2, rayColor);
     }
 
+    pub fn drawText(_: *const Render, text: [:0]const u8, fontSize: u32, position: utils.Point, color: Color) void {
+        const rayColor = color.toRayColor();
+
+        const x: c_int = @intFromFloat(position.x);
+        const y: c_int = @intFromFloat(position.y);
+        Raylib.DrawText(text, x, y, @as(c_int, @intCast(fontSize)), rayColor);
+    }
+
     pub fn getFrameTime(_: *const Render) f32 {
         return Raylib.GetFrameTime();
     }
