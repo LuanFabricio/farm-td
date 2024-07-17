@@ -15,7 +15,7 @@ pub const Farm = struct {
         farmPtr.cost = cost;
         farmPtr.gain = gain;
         farmPtr.delay = delay;
-        farmPtr.goldTime = timestamp();
+        farmPtr.goldTime = timestamp() + delay;
 
         return farmPtr;
     }
