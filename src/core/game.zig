@@ -31,12 +31,12 @@ pub const Game = struct {
     farmGrid: FarmGrid,
     gold: u32,
 
-    pub fn init(width: usize, height: usize) !This {
+    pub fn init(widthTurret: usize, heightTurret: usize, widthFarm: usize, heightFarm: usize) !This {
         return This{
             .enemies = ArrayList(*Enemy).init(Allocator),
             .enemySpawners = ArrayList(EnemySpawner).init(Allocator),
-            .turretGrid = try TurretGrid.init(width, height),
-            .farmGrid = try FarmGrid.init(width, height),
+            .turretGrid = try TurretGrid.init(widthTurret, heightTurret),
+            .farmGrid = try FarmGrid.init(widthFarm, heightFarm),
             .gold = 0,
         };
     }
@@ -61,6 +61,10 @@ pub const Game = struct {
 
     pub fn addTurret(self: *This, x: usize, y: usize, turret: *Turret) !void {
         self.turretGrid.addItem(x, y, turret);
+    }
+
+    pub fn addFarm(self: *This, x: usize, y: usize, farm: *Farm) !void {
+        self.farmGrid.addItem(x, y, farm);
     }
 
     pub fn farmGold(self: *This) void {
