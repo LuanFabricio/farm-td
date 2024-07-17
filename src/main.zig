@@ -27,15 +27,15 @@ const Game = gameImport.Game;
 const TurretGrid = gameImport.TurretGrid;
 const FarmGrid = gameImport.FarmGrid;
 
-const gridSize = 128;
-const turretGridOffset = utils.Point{ .x = @as(f32, @floatFromInt(gridSize)) / 2, .y = 64 };
-const farmGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 4, .y = 64 };
+const gridSize = 96;
+const turretGridOffset = utils.Point{ .x = @as(f32, @floatFromInt(gridSize)) / 2 + gridSize / 2, .y = gridSize };
+const farmGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 4 + gridSize / 2, .y = gridSize };
 
 pub fn main() !void {
-    var game = try Game.init(5, 5, 4, 4);
+    var game = try Game.init(300, 5, 5, 2, 4);
     defer game.deinit();
 
-    game.farmGrid.addItem(0, 0, try Farm.init(32, 16, 15));
+    game.farmGrid.addItem(0, 0, try Farm.init(32, 1600, 15));
 
     const turretPtr = try turret.Turret.init();
     // const enemyPtr = try enemy.Enemy.init(.{
@@ -145,11 +145,11 @@ fn updateScene(render: Render, game: *Game) !void {
 
         if (game.farmGrid.worldToGrid(mousePoint, farmGridOffset, gridSize)) |p| {
             std.debug.print("Mouse click at: {d}, {d}\n", p);
-            const newFarmPtr = try Farm.init(10, 30, 10);
+            const newFarmPtr = try Farm.init(1000, 30, 10);
 
             const x: usize = @intFromFloat(p.x);
             const y: usize = @intFromFloat(p.y);
-            try game.addFarm(x, y, newFarmPtr);
+            if (!game.addFarm(x, y, newFarmPtr)) allocator.destroy(newFarmPtr);
         }
     }
 
@@ -169,8 +169,8 @@ fn drawUI(render: Render, game: *const Game) !void {
     defer allocator.free(goldText);
 
     const position = utils.Point{
-        .x = 128,
-        .y = 128,
+        .x = 50,
+        .y = 50,
     };
     const color = utils.Color{
         .r = 0xff,
