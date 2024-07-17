@@ -51,14 +51,7 @@ pub fn Grid(comptime value_type: type) type {
 
         pub fn addItem(self: *This, x: usize, y: usize, turret: *value_type) void {
             const idx = self.xyToIndex(x, y);
-
-            if (idx > self.items.items.len) {
-                return;
-            }
-
-            if (self.items.items[idx]) |_| {
-                return;
-            }
+            if (idx > self.items.items.len and self.items.items[idx] != null) return;
 
             self.items.items[idx] = turret;
         }
