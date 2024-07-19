@@ -20,6 +20,10 @@ pub const Farm = struct {
         return farmPtr;
     }
 
+    pub fn heap_clone(self: *const This) !*This {
+        return try This.init(self.cost, self.gain, self.delay);
+    }
+
     pub fn getGold(self: *This) ?u32 {
         const now = timestamp();
         if (now < self.goldTime) return null;
