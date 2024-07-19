@@ -29,13 +29,16 @@ const FarmGrid = gameImport.FarmGrid;
 
 const gridSize = 96;
 const turretGridOffset = utils.Point{ .x = @as(f32, @floatFromInt(gridSize)) / 2 + gridSize / 2, .y = gridSize };
-const farmGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 4 + gridSize / 2, .y = gridSize };
+const farmGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 5 + gridSize / 2, .y = gridSize };
+const buyGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 2 + gridSize / 2, .y = gridSize };
 
 pub fn main() !void {
-    var game = try Game.init(300, 5, 5, 2, 4);
+    var game = try Game.init(300, 5, 5, 2, 4, 1, 4);
     defer game.deinit();
 
     game.farmGrid.addItem(0, 0, try Farm.init(32, 1600, 15));
+
+    game.buyGrid.addItem(0, 0, try Farm.init(32, 1600, 10));
 
     const turretPtr = try turret.Turret.init();
     // const enemyPtr = try enemy.Enemy.init(.{
@@ -125,8 +128,18 @@ fn drawScene(render: Render, game: *const Game) void {
         }
     }
 
+    for (game.buyGrid.getItems(), 0..) |item, idx| {
+        if (item) |_| {
+            const buyPoint = game.buyGrid.indexToXY(idx);
+            const center = game.buyGrid.gridToWorld(buyPoint, buyGridOffset, gridSize);
+
+            drawGridItem(render, center, farmColor);
+        }
+    }
+
     drawGrid(render, game.turretGrid.width, game.turretGrid.height, turretGridOffset);
     drawGrid(render, game.farmGrid.width, game.farmGrid.height, farmGridOffset);
+    drawGrid(render, game.buyGrid.width, game.buyGrid.height, buyGridOffset);
 }
 
 fn updateScene(render: Render, game: *Game) !void {
@@ -144,12 +157,15 @@ fn updateScene(render: Render, game: *Game) !void {
         }
 
         if (game.farmGrid.worldToGrid(mousePoint, farmGridOffset, gridSize)) |p| {
-            std.debug.print("Mouse click at: {d}, {d}\n", p);
-            const newFarmPtr = try Farm.init(1000, 30, 10);
-
             const x: usize = @intFromFloat(p.x);
             const y: usize = @intFromFloat(p.y);
-            if (!game.addFarm(x, y, newFarmPtr)) allocator.destroy(newFarmPtr);
+            _ = try game.addFarm(x, y);
+        }
+
+        if (game.buyGrid.worldToGrid(mousePoint, buyGridOffset, gridSize)) |p| {
+            const x: usize = @intFromFloat(p.x);
+            const y: usize = @intFromFloat(p.y);
+            game.updateCursor(x, y);
         }
     }
 
