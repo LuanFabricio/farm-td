@@ -29,7 +29,7 @@ pub const Game = struct {
     enemySpawners: ArrayList(EnemySpawner),
     turretGrid: TurretGrid,
     farmGrid: FarmGrid,
-    buyGrid: FarmGrid,
+    farmBuyGrid: FarmGrid,
     gold: u32,
     cursorFarm: ?*Farm,
 
@@ -47,7 +47,7 @@ pub const Game = struct {
             .enemySpawners = ArrayList(EnemySpawner).init(Allocator),
             .turretGrid = try TurretGrid.init(widthTurret, heightTurret),
             .farmGrid = try FarmGrid.init(widthFarm, heightFarm),
-            .buyGrid = try FarmGrid.init(widthBuy, heightBuy),
+            .farmBuyGrid = try FarmGrid.init(widthBuy, heightBuy),
             .gold = initial_gold,
             .cursorFarm = null,
         };
@@ -91,7 +91,7 @@ pub const Game = struct {
     }
 
     pub fn updateCursor(self: *This, x: usize, y: usize) void {
-        self.cursorFarm = self.buyGrid.getItem(x, y) catch null;
+        self.cursorFarm = self.farmBuyGrid.getItem(x, y) catch null;
     }
 
     pub fn farmGold(self: *This) void {
