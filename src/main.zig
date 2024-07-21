@@ -31,25 +31,20 @@ const gridSize = 96;
 const turretGridOffset = utils.Point{ .x = @as(f32, @floatFromInt(gridSize)) / 2 + gridSize / 2, .y = gridSize };
 const farmGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 5 + gridSize / 2, .y = gridSize };
 const farmBuyGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 2 + gridSize / 2, .y = gridSize };
+const turretBuyGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 2 + gridSize / 2, .y = gridSize * 3 };
 
 pub fn main() !void {
-    var game = try Game.init(300, 5, 5, 2, 4, 1, 4);
+    var game = try Game.init(300, 5, 5, 2, 4, 1, 2);
     defer game.deinit();
 
     game.farmGrid.addItem(0, 0, try Farm.init(32, 1600, 15));
 
     game.farmBuyGrid.addItem(0, 0, try Farm.init(32, 1600, 10));
+    game.turretBuyGrid.addItem(0, 0, try turret.Turret.init());
 
-    const turretPtr = try turret.Turret.init();
-    // const enemyPtr = try enemy.Enemy.init(.{
-    //     .x = 16,
-    //     .y = 64 * 3 + 32,
-    //     .w = 32,
-    //     .h = 64,
-    // });
-
-    // try game.addEnemy(enemyPtr);
-    try game.addTurret(4, 2, turretPtr);
+    game.cursorTurret = try turret.Turret.init();
+    _ = try game.addTurret(4, 2);
+    game.cursorTurret = null;
 
     const spawnerBase = utils.Rectangle{
         .x = 0,
@@ -137,9 +132,19 @@ fn drawScene(render: Render, game: *const Game) void {
         }
     }
 
+    for (game.turretBuyGrid.getItems(), 0..) |item, idx| {
+        if (item) |_| {
+            const turretBuyPoint = game.turretBuyGrid.indexToXY(idx);
+            const center = game.turretBuyGrid.gridToWorld(turretBuyPoint, turretBuyGridOffset, gridSize);
+
+            drawGridItem(render, center, turret.DEFAULT_COLOR);
+        }
+    }
+
     drawGrid(render, game.turretGrid.width, game.turretGrid.height, turretGridOffset);
     drawGrid(render, game.farmGrid.width, game.farmGrid.height, farmGridOffset);
     drawGrid(render, game.farmBuyGrid.width, game.farmBuyGrid.height, farmBuyGridOffset);
+    drawGrid(render, game.turretBuyGrid.width, game.turretBuyGrid.height, turretBuyGridOffset);
 }
 
 fn updateScene(render: Render, game: *Game) !void {
@@ -153,7 +158,7 @@ fn updateScene(render: Render, game: *Game) !void {
 
             const x: usize = @intFromFloat(p.x);
             const y: usize = @intFromFloat(p.y);
-            try game.addTurret(x, y, newTurretPtr);
+            _ = try game.addTurret(x, y);
         }
 
         if (game.farmGrid.worldToGrid(mousePoint, farmGridOffset, gridSize)) |p| {
@@ -165,7 +170,13 @@ fn updateScene(render: Render, game: *Game) !void {
         if (game.farmBuyGrid.worldToGrid(mousePoint, farmBuyGridOffset, gridSize)) |p| {
             const x: usize = @intFromFloat(p.x);
             const y: usize = @intFromFloat(p.y);
-            game.updateCursor(x, y);
+            game.updateCursorFarm(x, y);
+        }
+
+        if (game.turretBuyGrid.worldToGrid(mousePoint, turretBuyGridOffset, gridSize)) |p| {
+            const x: usize = @intFromFloat(p.x);
+            const y: usize = @intFromFloat(p.y);
+            game.updateCursorTurret(x, y);
         }
     }
 
