@@ -15,15 +15,16 @@ pub const DEFAULT_COLOR = utils.Color{
 };
 
 pub const Turret = struct {
+    const This = @This();
     entity: Entity,
     attackDelay: i64,
     attackTime: i64,
 
     // Create on the stack
-    pub fn new() Turret {
+    pub fn new() This {
         const attackTime = timestamp();
 
-        return Turret{
+        return This{
             .entity = Entity.defaultTurret(),
             .attackDelay = 1,
             .attackTime = attackTime,
@@ -31,8 +32,8 @@ pub const Turret = struct {
     }
 
     // Allocate on the heap
-    pub fn init() !*Turret {
-        var turretPtr = try Allocator.create(Turret);
+    pub fn init() !*This {
+        var turretPtr = try Allocator.create(This);
         const attackTime = timestamp();
 
         turretPtr.entity = Entity.defaultTurret();
@@ -42,36 +43,36 @@ pub const Turret = struct {
         return turretPtr;
     }
 
-    pub fn copy(self: *Turret, other: Turret) void {
+    pub fn copy(self: *This, other: This) void {
         self.entity.copy(other.entity);
         self.attackTime = other.attackTime;
         self.attackDelay = other.attackDelay;
     }
 
-    pub fn shouldAttack(self: *const Turret, turretPosition: utils.Point, otherPosition: utils.Point) bool {
+    pub fn shouldAttack(self: *const This, turretPosition: utils.Point, otherPosition: utils.Point) bool {
         return self.otherOnRange(turretPosition, otherPosition) and self.canAttack();
     }
 
-    fn otherOnRange(self: *const Turret, turretPos: utils.Point, otherPos: utils.Point) bool {
+    fn otherOnRange(self: *const This, turretPos: utils.Point, otherPos: utils.Point) bool {
         const dist = turretPos.calcDist(&otherPos);
         return dist <= self.entity.status.range;
     }
 
-    fn canAttack(self: *const Turret) bool {
+    fn canAttack(self: *const This) bool {
         const now = timestamp();
         return now >= self.attackTime;
     }
 
-    pub fn attackEntity(self: *const Turret, otherEntity: *Entity) void {
+    pub fn attackEntity(self: *const This, otherEntity: *Entity) void {
         otherEntity.status.health -= self.entity.status.attack;
     }
 
-    pub fn resetDelay(self: *Turret) void {
+    pub fn resetDelay(self: *This) void {
         const now = timestamp();
         self.attackTime = now + self.attackDelay;
     }
 
-    pub fn observer(_: *Turret, _: *Entity) void {
+    pub fn observer(_: *This, _: *Entity) void {
         // const enemyCenter = entity.box.getCenter();
         // const selfCenter = self.entity.box.getCenter();
         // const dist = selfCenter.calcDist(&enemyCenter);
