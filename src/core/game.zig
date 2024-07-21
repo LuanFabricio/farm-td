@@ -28,10 +28,12 @@ pub const Game = struct {
     enemies: ArrayList(*Enemy),
     enemySpawners: ArrayList(EnemySpawner),
     turretGrid: TurretGrid,
+    turretBuyGrid: TurretGrid,
     farmGrid: FarmGrid,
     farmBuyGrid: FarmGrid,
     gold: u32,
     cursorFarm: ?*Farm,
+    cursorTurret: ?*Turret,
 
     pub fn init(
         initial_gold: u32,
@@ -46,10 +48,12 @@ pub const Game = struct {
             .enemies = ArrayList(*Enemy).init(Allocator),
             .enemySpawners = ArrayList(EnemySpawner).init(Allocator),
             .turretGrid = try TurretGrid.init(widthTurret, heightTurret),
+            .turretBuyGrid = try TurretGrid.init(widthBuy, heightBuy),
             .farmGrid = try FarmGrid.init(widthFarm, heightFarm),
             .farmBuyGrid = try FarmGrid.init(widthBuy, heightBuy),
             .gold = initial_gold,
             .cursorFarm = null,
+            .cursorTurret = null,
         };
     }
 
@@ -75,8 +79,16 @@ pub const Game = struct {
         try self.enemies.append(enemy);
     }
 
-    pub fn addTurret(self: *This, x: usize, y: usize, turret: *Turret) !void {
-        self.turretGrid.addItem(x, y, turret);
+    pub fn addTurret(self: *This, x: usize, y: usize) !bool {
+        if (self.cursorTurret) |cursorTurret| {
+            const copyHeap = try Turret.init();
+            copyHeap.copy(cursorTurret.*);
+            self.turretGrid.addItem(x, y, copyHeap);
+
+            self.cursorTurret = null;
+            return true;
+        }
+        return false;
     }
 
     pub fn addFarm(self: *This, x: usize, y: usize) !bool {
@@ -84,14 +96,20 @@ pub const Game = struct {
             if (self.gold >= cursorFarm.cost) {
                 self.gold -= cursorFarm.cost;
                 self.farmGrid.addItem(x, y, try cursorFarm.heap_clone());
+
+                self.cursorFarm = null;
                 return true;
             }
         }
         return false;
     }
 
-    pub fn updateCursor(self: *This, x: usize, y: usize) void {
+    pub fn updateCursorFarm(self: *This, x: usize, y: usize) void {
         self.cursorFarm = self.farmBuyGrid.getItem(x, y) catch null;
+    }
+
+    pub fn updateCursorTurret(self: *This, x: usize, y: usize) void {
+        self.cursorTurret = self.turretBuyGrid.getItem(x, y) catch null;
     }
 
     pub fn farmGold(self: *This) void {
