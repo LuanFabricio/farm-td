@@ -28,6 +28,7 @@ pub const Enemy = struct {
     entity: Entity,
     box: utils.Rectangle,
     turrets: ArrayList(*Turret),
+    // TODO: create an attack module
     attackDelay: i64,
     attackTime: i64,
 
