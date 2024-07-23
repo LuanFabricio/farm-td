@@ -53,6 +53,13 @@ pub const Render = struct {
         Raylib.DrawLineV(p1RayVec2, p2RayVec2, rayColor);
     }
 
+    pub fn drawCircleLinesP(_: *const Render, center: Point, radius: f32, color: Color) void {
+        const rayColor = color.toRayColor();
+        const centerRayVec2 = center.toRayVec2();
+
+        Raylib.DrawCircleLinesV(centerRayVec2, radius, rayColor);
+    }
+
     pub fn drawText(_: *const Render, text: [:0]const u8, fontSize: u32, position: utils.Point, color: Color) void {
         const rayColor = color.toRayColor();
 
