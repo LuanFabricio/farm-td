@@ -3,6 +3,13 @@ const Allocator = std.heap.page_allocator;
 
 const timestamp = std.time.timestamp;
 
+const utils = @import("../utils/utils.zig");
+
+pub const FARM_SIZE = utils.Point{
+    .x = 32,
+    .y = 64,
+};
+
 pub const Farm = struct {
     const This = @This();
     cost: u32,
