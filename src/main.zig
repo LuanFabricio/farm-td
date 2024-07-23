@@ -34,7 +34,7 @@ const farmBuyGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSi
 const turretBuyGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 2 + gridSize / 2, .y = gridSize * 3 };
 
 pub fn main() !void {
-    var game = try Game.init(300, 5, 5, 2, 4, 1, 2);
+    var game = try Game.init(300, 7, 5, 2, 4, 1, 2);
     defer game.deinit();
 
     game.farmGrid.addItem(0, 0, try Farm.init(32, 1600, 15));
@@ -43,7 +43,7 @@ pub fn main() !void {
     game.turretBuyGrid.addItem(0, 0, try turret.Turret.init());
 
     game.cursorTurret = try turret.Turret.init();
-    _ = try game.addTurret(4, 2);
+    _ = try game.addTurret(game.turretGrid.width - 1, 2);
     game.cursorTurret = null;
 
     const spawnerBase = utils.Rectangle{
@@ -102,7 +102,7 @@ fn drawScene(render: Render, game: *const Game) void {
             const turretPoint = game.turretGrid.indexToXY(idx);
             const center = game.turretGrid.gridToWorld(turretPoint, turretGridOffset, gridSize);
 
-            drawGridItem(render, center, turret.DEFAULT_COLOR);
+            drawGridItem(render, center, turret.DEFAULT_COLOR, turret.TURRET_SIZE);
 
             const turretHealthRect = getHealthRect(getItemRect(center));
             const turretHpP: f32 = currentTurret.entity.healthPercentage();
@@ -119,7 +119,7 @@ fn drawScene(render: Render, game: *const Game) void {
             const farmPoint = game.farmGrid.indexToXY(idx);
             const center = game.farmGrid.gridToWorld(farmPoint, farmGridOffset, gridSize);
 
-            drawGridItem(render, center, farmColor);
+            drawGridItem(render, center, farmColor, farmImport.FARM_SIZE);
         }
     }
 
@@ -128,7 +128,7 @@ fn drawScene(render: Render, game: *const Game) void {
             const farmBuyPoint = game.farmBuyGrid.indexToXY(idx);
             const center = game.farmBuyGrid.gridToWorld(farmBuyPoint, farmBuyGridOffset, gridSize);
 
-            drawGridItem(render, center, farmColor);
+            drawGridItem(render, center, farmColor, farmImport.FARM_SIZE);
         }
     }
 
@@ -137,7 +137,7 @@ fn drawScene(render: Render, game: *const Game) void {
             const turretBuyPoint = game.turretBuyGrid.indexToXY(idx);
             const center = game.turretBuyGrid.gridToWorld(turretBuyPoint, turretBuyGridOffset, gridSize);
 
-            drawGridItem(render, center, turret.DEFAULT_COLOR);
+            drawGridItem(render, center, turret.DEFAULT_COLOR, turret.TURRET_SIZE);
         }
     }
 
@@ -189,6 +189,9 @@ fn updateScene(render: Render, game: *Game) !void {
 
     try game.turretShoot(turretGridOffset, gridSize);
     game.cleanDeadEnemies();
+
+    try game.enemyAttack(turretGridOffset, gridSize);
+    game.cleanDeadTurrets();
 }
 
 fn drawUI(render: Render, game: *const Game) !void {
@@ -217,12 +220,12 @@ fn displayHealth(render: Render, baseRect: utils.Rectangle, baseColor: utils.Col
     render.drawRectangleRect(healthRect, healthColor);
 }
 
-fn drawGridItem(render: Render, center: utils.Point, itemColor: utils.Color) void {
+fn drawGridItem(render: Render, center: utils.Point, itemColor: utils.Color, itemSize: utils.Point) void {
     const itemRect = utils.Rectangle{
-        .x = center.x + @as(f32, @floatFromInt(gridSize / 2)) - 16,
-        .y = center.y + 32,
-        .w = 32,
-        .h = 64,
+        .x = center.x + @as(f32, @floatFromInt(gridSize / 2)) - itemSize.x / 2,
+        .y = center.y + itemSize.y / 2,
+        .w = itemSize.x,
+        .h = itemSize.y,
     };
 
     render.drawRectangleRect(itemRect, itemColor);
@@ -245,17 +248,21 @@ fn drawEnemy(render: Render, e: *const enemy.Enemy, baseColor: utils.Color) void
     const healthColor = utils.Color{ .r = 255, .g = 0, .b = 0, .a = 255 };
 
     displayHealth(render, enemyRect, baseColor, healthColor, enemyHpP);
+
+    // drawAttackRange
+    // const enemyCenter = e.box.getCenter();
+    // render.drawCircleLinesP(enemyCenter, e.entity.status.range, healthColor);
 }
 
 fn getHealthRect(rect: utils.Rectangle) utils.Rectangle {
     const center = rect.getCenter();
     var r = utils.Rectangle{
         .x = center.x,
-        .y = center.y,
+        .y = center.y - rect.h / 2,
         .w = rect.w,
         .h = 10,
     };
-    const yPadding = r.h / 2 - 15;
+    const yPadding = r.h + 5;
 
     r.x = center.x - r.w / 2;
     r.y -= yPadding;
