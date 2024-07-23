@@ -124,6 +124,7 @@ pub const Game = struct {
         for (self.enemySpawners.items) |*enemy| {
             const enempyOption = try enemy.spawn();
             if (enempyOption) |enemyPtr| {
+                enemyPtr.entity.status.range = enemyPtr.box.w / 2;
                 try self.enemies.append(enemyPtr);
             }
         }
@@ -159,6 +160,35 @@ pub const Game = struct {
 
                 Allocator.destroy(enemyPtr);
                 if (i > 0) i -= 1;
+            }
+        }
+    }
+
+    pub fn enemyAttack(self: *This, turretOffset: utils.Point, gridSize: f32) !void {
+        for (self.enemies.items) |enemy| {
+            for (self.turretGrid.items.items, 0..) |turretOption, idx| {
+                if (turretOption == null) continue;
+
+                var turretPosition = self.turretGrid.indexToXY(idx);
+                turretPosition.x = turretPosition.x * gridSize + turretOffset.x;
+                turretPosition.y = turretPosition.y * gridSize + turretOffset.y;
+                turretPosition.x += turretImport.TURRET_SIZE.x;
+                turretPosition.y += turretImport.TURRET_SIZE.y;
+
+                if (enemy.shouldAttack(turretPosition)) {
+                    const turret = turretOption.?;
+                    enemy.attackEntity(&turret.entity);
+                    enemy.resetDelay();
+                    break;
+                }
+            }
+        }
+    }
+
+    pub fn cleanDeadTurrets(self: *This) void {
+        for (0..self.turretGrid.items.items.len) |idx| {
+            if (self.turretGrid.items.items[idx]) |turret| {
+                if (turret.entity.status.health <= 0) self.turretGrid.items.items[idx] = null;
             }
         }
     }
