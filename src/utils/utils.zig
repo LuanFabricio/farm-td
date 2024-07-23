@@ -67,7 +67,7 @@ pub const Rectangle = struct {
 
     pub fn getCenter(self: *const Rectangle) Point {
         const cx = self.x + self.w / 2;
-        const cy = self.y - self.h / 2;
+        const cy = self.y + self.h / 2;
 
         return Point{
             .x = cx,
