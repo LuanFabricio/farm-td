@@ -7,6 +7,11 @@ const utils = @import("../utils/utils.zig");
 
 const Entity = @import("entity.zig").Entity;
 
+pub const TURRET_SIZE = utils.Point{
+    .x = 32,
+    .y = 64,
+};
+
 pub const DEFAULT_COLOR = utils.Color{
     .r = 0x99,
     .g = 0x99,
@@ -34,11 +39,10 @@ pub const Turret = struct {
     // Allocate on the heap
     pub fn init() !*This {
         var turretPtr = try Allocator.create(This);
-        const attackTime = timestamp();
 
         turretPtr.entity = Entity.defaultTurret();
-        turretPtr.attackDelay = 1;
-        turretPtr.attackTime = attackTime;
+        turretPtr.attackDelay = 100;
+        turretPtr.attackTime = timestamp();
 
         return turretPtr;
     }
