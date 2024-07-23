@@ -27,8 +27,8 @@ pub const Entity = struct {
     pub fn defaultEnemy() Entity {
         const defaultStatus = Status{
             .health = 20,
-            .attack = 2,
-            .range = 1,
+            .attack = 5,
+            .range = 10,
         };
 
         return Entity{
