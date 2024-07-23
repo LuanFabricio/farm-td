@@ -24,12 +24,15 @@ pub const DEFAULT_COLOR = utils.Color{
 };
 
 pub const Enemy = struct {
+    const This = @This();
     entity: Entity,
     box: utils.Rectangle,
     turrets: ArrayList(*Turret),
+    attackDelay: i64,
+    attackTime: i64,
 
-    pub fn init(box: utils.Rectangle) !*Enemy {
-        var enemyPtr = try Allocator.create(Enemy);
+    pub fn init(box: utils.Rectangle) !*This {
+        var enemyPtr = try Allocator.create(This);
 
         enemyPtr.box.copy(box);
         enemyPtr.entity = Entity.defaultEnemy();
@@ -38,32 +41,56 @@ pub const Enemy = struct {
         return enemyPtr;
     }
 
-    pub fn deinit(self: *Enemy) void {
+    pub fn deinit(self: *This) void {
         self.turrets.deinit();
     }
 
-    pub fn copy(self: *Enemy, other: Enemy) void {
+    pub fn copy(self: *This, other: This) void {
         self.box.copy(other.box);
         self.entity.copy(other.entity);
         self.turrets = ArrayList(*Turret).init(Allocator);
     }
 
-    pub fn addObserver(self: *Enemy, observer: *Turret) !void {
+    pub fn addObserver(self: *This, observer: *Turret) !void {
         std.debug.print("Turrets: {d}\n", .{self.turrets.items.len});
         try self.turrets.append(observer);
     }
 
-    pub fn notifyAll(self: *Enemy) void {
+    pub fn notifyAll(self: *This) void {
         for (self.turrets.items) |turret| {
             turret.observer(&self.entity);
         }
     }
 
-    pub fn move(self: *Enemy, frameTime: f32) void {
+    pub fn move(self: *This, frameTime: f32) void {
         if (self.entity.status.health > 0) {
             self.box.x += DEFAULT_SPEED * frameTime;
             self.notifyAll();
         }
+    }
+
+    pub fn shouldAttack(self: *const This, otherPosition: utils.Point) bool {
+        return self.canAttack() and self.otherOnRange(otherPosition);
+    }
+
+    fn otherOnRange(self: *const This, otherPos: utils.Point) bool {
+        const enemyPos = self.box.getCenter();
+        const dist = enemyPos.calcDist(&otherPos);
+        return dist <= self.entity.status.range;
+    }
+
+    fn canAttack(self: *const This) bool {
+        const now = timestamp();
+        return now >= self.attackTime;
+    }
+
+    pub fn attackEntity(self: *This, entity: *Entity) void {
+        entity.status.health -= self.entity.status.attack;
+    }
+
+    pub fn resetDelay(self: *This) void {
+        const now = timestamp();
+        self.attackTime = now + self.attackDelay;
     }
 };
 
