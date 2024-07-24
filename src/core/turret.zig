@@ -95,3 +95,4 @@ pub const Turret = struct {
         // }
     }
 };
+// TODO(luan): Creste a projectile when shoot
