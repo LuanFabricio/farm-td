@@ -72,3 +72,5 @@ pub const Render = struct {
         return Raylib.GetFrameTime();
     }
 };
+// TODO(luan): Creste a texture render
+// TODO(luan): Creste an animation module
