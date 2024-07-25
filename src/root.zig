@@ -8,4 +8,5 @@ test {
     _ = @import("core/test_turret.zig");
     _ = @import("core/test_enemy.zig");
     _ = @import("core/test_farm.zig");
+    _ = @import("utils/test_delay.zig");
 }
