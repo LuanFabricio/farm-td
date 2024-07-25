@@ -6,6 +6,7 @@ const ArrayList = std.ArrayList;
 const Allocator = std.heap.page_allocator;
 
 const utils = @import("../utils/utils.zig");
+const Delay = @import("../utils/delay.zig").Delay;
 
 const Entity = @import("entity.zig").Entity;
 const Turret = @import("turret.zig").Turret;
@@ -28,9 +29,7 @@ pub const Enemy = struct {
     entity: Entity,
     box: utils.Rectangle,
     turrets: ArrayList(*Turret),
-    // TODO: create an attack module
-    attackDelay: i64,
-    attackTime: i64,
+    attackDelay: Delay,
 
     pub fn init(box: utils.Rectangle) !*This {
         var enemyPtr = try Allocator.create(This);
@@ -38,6 +37,8 @@ pub const Enemy = struct {
         enemyPtr.box.copy(box);
         enemyPtr.entity = Entity.defaultEnemy();
         enemyPtr.turrets = ArrayList(*Turret).init(Allocator);
+
+        enemyPtr.attackDelay = Delay.new(5, false);
 
         return enemyPtr;
     }
@@ -81,8 +82,7 @@ pub const Enemy = struct {
     }
 
     fn canAttack(self: *const This) bool {
-        const now = timestamp();
-        return now >= self.attackTime;
+        return !self.attackDelay.onCooldown();
     }
 
     pub fn attackEntity(self: *This, entity: *Entity) void {
@@ -90,8 +90,7 @@ pub const Enemy = struct {
     }
 
     pub fn resetDelay(self: *This) void {
-        const now = timestamp();
-        self.attackTime = now + self.attackDelay;
+        self.attackDelay.applyDelay();
     }
 };
 
