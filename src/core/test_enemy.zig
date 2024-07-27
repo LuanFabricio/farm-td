@@ -109,18 +109,18 @@ test "Should validate attack cooldown and enemy range" {
     // Should not attack if the enemy is far and attack is on cooldown
     try expect(!enemy.shouldAttack(p1));
 
-    enemy.attackTime = timestamp();
+    enemy.attackDelay.timer = timestamp();
     // Should not attack if the enemy is far and attack isnt on cooldown
     try expect(!enemy.shouldAttack(p1));
 
     var p2 = enemyCenter;
     p2.x += 3;
     p2.y += 3;
-    enemy.attackTime = timestamp() + 3600;
+    enemy.attackDelay.timer = timestamp() + 3600;
     // Should not attack if the enemy near and attack is on cooldown
     try expect(!enemy.shouldAttack(p2));
 
-    enemy.attackTime = timestamp();
+    enemy.attackDelay.timer = timestamp();
     // Should attack if the enemy near and attack is on cooldown
     try expect(enemy.shouldAttack(p2));
 }
