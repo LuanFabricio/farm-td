@@ -16,7 +16,7 @@ pub const Delay = struct {
 
     pub fn onCooldown(self: *const This) bool {
         const now = timestamp();
-        return self.timer <= now;
+        return self.timer > now;
     }
 
     pub fn applyDelay(self: *This) void {

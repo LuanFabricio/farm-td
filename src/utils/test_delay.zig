@@ -23,18 +23,18 @@ test "It should start with timer equals now when stratOnCooldown is false" {
     try expect(someDelay.timer <= now);
 }
 
-test "onCooldown should be true if the timer is less or equal the now timestamp " {
+test "onCooldown should be true if the timer is less or equal the now timestamp" {
     const delay = 60;
     const someDelay = Delay.new(delay, false);
 
-    try expect(someDelay.onCooldown());
+    try expect(!someDelay.onCooldown());
 }
 
-test "onCooldown should be false if the timer is greater than now timestamp " {
+test "onCooldown should be false if the timer is greater than now timestamp" {
     const delay = 60;
     const someDelay = Delay.new(delay, true);
 
-    try expect(!someDelay.onCooldown());
+    try expect(someDelay.onCooldown());
 }
 
 test "applyDelay should set timer propertie to be now plus delay" {
