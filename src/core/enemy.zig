@@ -38,7 +38,7 @@ pub const Enemy = struct {
         enemyPtr.entity = Entity.defaultEnemy();
         enemyPtr.turrets = ArrayList(*Turret).init(Allocator);
 
-        enemyPtr.attackDelay = Delay.new(5, false);
+        enemyPtr.attackDelay = Delay.new(5000, false);
 
         return enemyPtr;
     }
