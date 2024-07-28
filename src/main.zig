@@ -17,6 +17,7 @@ const farmImport = @import("core/farm.zig");
 const Farm = farmImport.Farm;
 
 const Render = @import("render/render.zig").Render;
+const Sprite = @import("render/sprite.zig").Sprite;
 
 const input = @import("input/input.zig");
 const Input = input.Input;
@@ -67,8 +68,13 @@ pub fn main() !void {
     var render = Render.init();
     defer render.deinit();
 
+    // TODO: Remove testSpr
+    const testSpr = Sprite.load_texture("assets/sprites/test/test.png");
+    defer testSpr.unload_texture();
+
     while (render.shouldRender()) {
-        drawScene(render, &game);
+        // TODO: Remove testSpr
+        drawScene(render, &game, testSpr);
         updateScene(render, &game) catch |err| std.debug.print("Update error: {any}\n", .{err});
         try drawUI(render, &game);
 
@@ -76,7 +82,7 @@ pub fn main() !void {
     }
 }
 
-fn drawScene(render: Render, game: *const Game) void {
+fn drawScene(render: Render, game: *const Game, sprite: Sprite) void {
     const baseColor = utils.Color{
         .r = 0xaa,
         .g = 0xaa,
@@ -145,6 +151,14 @@ fn drawScene(render: Render, game: *const Game) void {
     drawGrid(render, game.farmGrid.width, game.farmGrid.height, farmGridOffset);
     drawGrid(render, game.farmBuyGrid.width, game.farmBuyGrid.height, farmBuyGridOffset);
     drawGrid(render, game.turretBuyGrid.width, game.turretBuyGrid.height, turretBuyGridOffset);
+
+    const texColor = utils.Color{
+        .r = 0xff,
+        .g = 0xff,
+        .b = 0xff,
+        .a = 0xff,
+    };
+    utils.Raylib.DrawTexture(sprite.content, 400, 400, texColor.toRayColor());
 }
 
 fn updateScene(render: Render, game: *Game) !void {
