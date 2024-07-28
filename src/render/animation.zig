@@ -41,6 +41,5 @@ pub const Animation = struct {
 
         self.currentSprite = (self.currentSprite + 1) % self.sprites.items.len;
         self.delay.applyDelay();
-        std.debug.print("Current sprite: {d}\n", .{self.currentSprite});
     }
 };
