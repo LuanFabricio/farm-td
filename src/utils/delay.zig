@@ -1,5 +1,5 @@
 const std = @import("std");
-const timestamp = std.time.timestamp;
+const timestamp = std.time.milliTimestamp;
 
 pub const Delay = struct {
     const This = @This();
