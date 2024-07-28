@@ -18,6 +18,7 @@ const Farm = farmImport.Farm;
 
 const Render = @import("render/render.zig").Render;
 const Sprite = @import("render/sprite.zig").Sprite;
+const Animation = @import("render/animation.zig").Animation;
 
 const input = @import("input/input.zig");
 const Input = input.Input;
@@ -72,9 +73,12 @@ pub fn main() !void {
     const testSpr = Sprite.load_texture("assets/sprites/test/test.png");
     defer testSpr.unload_texture();
 
+    var testAnimation = try Animation.init("assets/sprites/test/test", 5);
+    defer testAnimation.deinit();
+
     while (render.shouldRender()) {
         // TODO: Remove testSpr
-        drawScene(render, &game, testSpr);
+        drawScene(render, &game, testSpr, &testAnimation);
         updateScene(render, &game) catch |err| std.debug.print("Update error: {any}\n", .{err});
         try drawUI(render, &game);
 
@@ -82,7 +86,7 @@ pub fn main() !void {
     }
 }
 
-fn drawScene(render: Render, game: *const Game, sprite: Sprite) void {
+fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Animation) void {
     const baseColor = utils.Color{
         .r = 0xaa,
         .g = 0xaa,
@@ -159,6 +163,8 @@ fn drawScene(render: Render, game: *const Game, sprite: Sprite) void {
         .a = 0xff,
     };
     utils.Raylib.DrawTexture(sprite.content, 400, 400, texColor.toRayColor());
+    utils.Raylib.DrawTexture(animation.sprites.items[animation.currentSprite].content, 500, 500, texColor.toRayColor());
+    animation.nextSprite();
 }
 
 fn updateScene(render: Render, game: *Game) !void {
