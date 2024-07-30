@@ -70,8 +70,8 @@ pub fn Grid(comptime value_type: type) type {
         }
 
         pub fn worldToGrid(self: *const This, worldPoint: utils.Point, gridOffset: utils.Point, cellSize: f32) ?utils.Point {
-            const maxX: f32 = @as(f32, @floatFromInt(self.width)) * cellSize + gridOffset.x;
-            const maxY: f32 = @as(f32, @floatFromInt(self.height)) * cellSize + gridOffset.y;
+            const maxX: f32 = @as(f32, @floatFromInt(self.width)) * cellSize + gridOffset.x - 1;
+            const maxY: f32 = @as(f32, @floatFromInt(self.height)) * cellSize + gridOffset.y - 1;
 
             if (worldPoint.x < gridOffset.x or worldPoint.x > maxX or worldPoint.y < gridOffset.y or worldPoint.y > maxY) {
                 return null;
