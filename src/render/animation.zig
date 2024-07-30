@@ -12,8 +12,10 @@ pub const Animation = struct {
     sprites: ArrayList(Sprite),
     currentSprite: usize,
     delay: Delay,
+    reverseToLoop: bool,
+    onReverse: bool,
 
-    pub fn init(filepath: []const u8, frames: usize) !This {
+    pub fn init(filepath: []const u8, frames: usize, reverseToLoop: bool) !This {
         var sprites = ArrayList(Sprite).init(Allocator);
 
         for (1..(frames + 1)) |idx| {
@@ -26,6 +28,8 @@ pub const Animation = struct {
             .sprites = sprites,
             .currentSprite = 0,
             .delay = Delay.new(500, true),
+            .reverseToLoop = reverseToLoop,
+            .onReverse = false,
         };
     }
 
@@ -39,7 +43,28 @@ pub const Animation = struct {
     pub fn nextSprite(self: *This) void {
         if (self.delay.onCooldown()) return;
 
-        self.currentSprite = (self.currentSprite + 1) % self.sprites.items.len;
+        if (self.onReverse) {
+            self.applyReverse();
+        } else {
+            self.currentSprite += 1;
+        }
+
+        if (self.reverseToLoop) {
+            if (!self.onReverse and self.currentSprite >= self.sprites.items.len) {
+                self.onReverse = true;
+                self.currentSprite -= 1;
+            }
+        }
+
         self.delay.applyDelay();
+    }
+
+    fn applyReverse(self: *This) void {
+        if (self.currentSprite != 0) {
+            self.currentSprite -= 1;
+            return;
+        }
+        self.currentSprite = 0;
+        self.onReverse = false;
     }
 };

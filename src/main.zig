@@ -73,7 +73,7 @@ pub fn main() !void {
     const testSpr = Sprite.load_texture("assets/sprites/test/test.png");
     defer testSpr.unload_texture();
 
-    var testAnimation = try Animation.init("assets/sprites/test/test", 5);
+    var testAnimation = try Animation.init("assets/sprites/test/test", 5, true);
     defer testAnimation.deinit();
 
     while (render.shouldRender()) {
