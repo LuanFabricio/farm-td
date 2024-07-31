@@ -22,3 +22,30 @@ pub const Sprite = struct {
         Raylib.UnloadTexture(self.content);
     }
 };
+
+pub const SpriteSheet = struct {
+    const This = @This();
+    sheet: Raylib.Texture2D,
+    spriteWidth: usize,
+    spriteHeight: usize,
+    gridRows: usize,
+    gridCols: usize,
+    gridPadding: utils.Point,
+
+    pub fn load_sprite_sheet(textureName: [*c]const u8, spriteWidth: usize, spriteHeight: usize, gridRows: usize, gridCols: usize, gridPadding: utils.Point) This {
+        const tex = Raylib.LoadTexture(textureName);
+
+        return This{
+            .sheet = tex,
+            .spriteWidth = spriteWidth,
+            .spriteHeight = spriteHeight,
+            .gridRows = gridRows,
+            .gridCols = gridCols,
+            .gridPadding = gridPadding,
+        };
+    }
+
+    pub fn unload_sprite_sheet(self: This) void {
+        Raylib.UnloadTexture(self.sheet);
+    }
+};
