@@ -20,6 +20,8 @@ const Render = @import("render/render.zig").Render;
 const Sprite = @import("render/sprite.zig").Sprite;
 const Animation = @import("render/animation.zig").Animation;
 
+// TODO(Luan): Add spritesheet
+
 const input = @import("input/input.zig");
 const Input = input.Input;
 const KeyEnum = input.KeyEnum;
