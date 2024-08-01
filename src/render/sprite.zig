@@ -45,7 +45,16 @@ pub const SpriteSheet = struct {
         };
     }
 
-    pub fn unload_sprite_sheet(self: This) void {
+    pub fn unload_sprite_sheet(self: *This) void {
         Raylib.UnloadTexture(self.sheet);
+    }
+
+    pub fn getSpriteRect(self: *const This, row: usize, col: usize) utils.Rectangle {
+        return utils.Rectangle{
+            .x = @as(f32, @floatFromInt(col)) * (@as(f32, @floatFromInt(self.spriteWidth)) + self.gridPadding.x),
+            .y = @as(f32, @floatFromInt(row)) * (@as(f32, @floatFromInt(self.spriteHeight)) + self.gridPadding.y),
+            .w = @as(f32, @floatFromInt(self.spriteWidth)),
+            .h = @as(f32, @floatFromInt(self.spriteHeight)),
+        };
     }
 };
