@@ -1,5 +1,5 @@
 const std = @import("std");
-const timestamp = std.time.timestamp;
+const timestamp = std.time.milliTimestamp;
 const expect = std.testing.expect;
 
 const Allocator = std.heap.page_allocator;

@@ -1,6 +1,6 @@
 const std = @import("std");
 const expect = std.testing.expect;
-const timestamp = std.time.timestamp;
+const timestamp = std.time.milliTimestamp;
 
 const delayImport = @import("delay.zig");
 const Delay = delayImport.Delay;
