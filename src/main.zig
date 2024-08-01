@@ -17,10 +17,11 @@ const farmImport = @import("core/farm.zig");
 const Farm = farmImport.Farm;
 
 const Render = @import("render/render.zig").Render;
-const Sprite = @import("render/sprite.zig").Sprite;
+// const spriteImport = @import("render/sprite.zig");
+const spriteImport = @import("render/sprite.zig");
+const Sprite = spriteImport.Sprite;
+const SpriteSheet = spriteImport.SpriteSheet;
 const Animation = @import("render/animation.zig").Animation;
-
-// TODO(Luan): Add spritesheet
 
 const input = @import("input/input.zig");
 const Input = input.Input;
@@ -37,9 +38,15 @@ const farmGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)
 const farmBuyGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 2 + gridSize / 2, .y = gridSize };
 const turretBuyGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 2 + gridSize / 2, .y = gridSize * 3 };
 
+const Delay = @import("utils/delay.zig").Delay;
+var delay: Delay = undefined;
+var iloop: usize = 0;
+
 pub fn main() !void {
     var game = try Game.init(300, 7, 5, 2, 4, 1, 2);
     defer game.deinit();
+
+    delay = Delay.new(500, true);
 
     game.farmGrid.addItem(0, 0, try Farm.init(32, 1600, 15));
 
@@ -78,9 +85,12 @@ pub fn main() !void {
     var testAnimation = try Animation.init("assets/sprites/test/test", 5, true);
     defer testAnimation.deinit();
 
+    var testSpritesheet = SpriteSheet.load_sprite_sheet("assets/sprites/testsheet/testsheet-Sheet.png", 32, 32, 3, 1, utils.Point{ .x = 0, .y = 0 });
+    defer testSpritesheet.unload_sprite_sheet();
+
     while (render.shouldRender()) {
         // TODO: Remove testSpr
-        drawScene(render, &game, testSpr, &testAnimation);
+        drawScene(render, &game, testSpr, &testAnimation, testSpritesheet);
         updateScene(render, &game) catch |err| std.debug.print("Update error: {any}\n", .{err});
         try drawUI(render, &game);
 
@@ -88,7 +98,7 @@ pub fn main() !void {
     }
 }
 
-fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Animation) void {
+fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Animation, spritesheet: SpriteSheet) void {
     const baseColor = utils.Color{
         .r = 0xaa,
         .g = 0xaa,
@@ -167,6 +177,19 @@ fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Anim
     utils.Raylib.DrawTexture(sprite.content, 400, 400, texColor.toRayColor());
     utils.Raylib.DrawTexture(animation.sprites.items[animation.currentSprite].content, 500, 500, texColor.toRayColor());
     animation.nextSprite();
+
+    const srect = spritesheet.getSpriteRect(0, iloop);
+    const rayvec = utils.Point{ .x = 100, .y = 100 };
+    utils.Raylib.DrawTextureRec(spritesheet.sheet, srect.toRayRect(), rayvec.toRayVec2(), texColor.toRayColor());
+
+    if (!delay.onCooldown()) {
+        iloop = (iloop + 1) % 3;
+        std.debug.print("iloop: {d}\n", .{iloop});
+        std.debug.print("delay: {any}\n", .{delay});
+
+        std.debug.print("Rect: {any}\n", .{srect});
+        delay.applyDelay();
+    }
 }
 
 fn updateScene(render: Render, game: *Game) !void {
