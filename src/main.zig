@@ -38,15 +38,15 @@ const farmGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)
 const farmBuyGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 2 + gridSize / 2, .y = gridSize };
 const turretBuyGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 2 + gridSize / 2, .y = gridSize * 3 };
 
-const Delay = @import("utils/delay.zig").Delay;
-var delay: Delay = undefined;
-var iloop: usize = 0;
+// const Delay = @import("utils/delay.zig").Delay;
+// var delay: Delay = undefined;
+// var iloop: usize = 0;
 
 pub fn main() !void {
     var game = try Game.init(300, 7, 5, 2, 4, 1, 2);
     defer game.deinit();
 
-    delay = Delay.new(500, true);
+    // delay = Delay.new(500, true);
 
     game.farmGrid.addItem(0, 0, try Farm.init(32, 1600, 15));
 
@@ -178,18 +178,18 @@ fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Anim
     utils.Raylib.DrawTexture(animation.sprites.items[animation.currentSprite].content, 500, 500, texColor.toRayColor());
     animation.nextSprite();
 
-    const srect = spritesheet.getSpriteRect(0, iloop);
+    const srect = spritesheet.getSpriteRect(0, 1);
     const rayvec = utils.Point{ .x = 100, .y = 100 };
     utils.Raylib.DrawTextureRec(spritesheet.sheet, srect.toRayRect(), rayvec.toRayVec2(), texColor.toRayColor());
 
-    if (!delay.onCooldown()) {
-        iloop = (iloop + 1) % 3;
-        std.debug.print("iloop: {d}\n", .{iloop});
-        std.debug.print("delay: {any}\n", .{delay});
+    // if (!delay.onCooldown()) {
+    //     iloop = (iloop + 1) % 3;
+    //     std.debug.print("iloop: {d}\n", .{iloop});
+    //     std.debug.print("delay: {any}\n", .{delay});
 
-        std.debug.print("Rect: {any}\n", .{srect});
-        delay.applyDelay();
-    }
+    //     std.debug.print("Rect: {any}\n", .{srect});
+    //     delay.applyDelay();
+    // }
 }
 
 fn updateScene(render: Render, game: *Game) !void {
