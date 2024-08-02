@@ -24,6 +24,7 @@ const SpriteSheet = spriteImport.SpriteSheet;
 const Animation = @import("render/animation.zig").Animation;
 const AnimationSpriteSheet = @import("render/animation.zig").AnimationSpriteSheet;
 const Animation1 = @import("render/animation.zig").Animation1;
+const Animation2 = @import("render/animation.zig").Animation2;
 
 const Delay = @import("utils/delay.zig").Delay;
 
@@ -45,6 +46,17 @@ const turretBuyGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(grid
 // const Delay = @import("utils/delay.zig").Delay;
 // var delay: Delay = undefined;
 // var iloop: usize = 0;
+
+const TestSprts = struct {
+    testSprite: Sprite,
+    testAnimation1: Animation,
+    testAnimation2: Animation,
+    testSpritesheet: SpriteSheet,
+    testSpritesheetAnimation1: AnimationSpriteSheet,
+    testSpritesheetAnimation2: AnimationSpriteSheet,
+    testCustomSh1: Animation1,
+    testCustomSh2: Animation2,
+};
 
 pub fn main() !void {
     var game = try Game.init(300, 7, 5, 2, 4, 1, 2);
@@ -83,30 +95,26 @@ pub fn main() !void {
     defer render.deinit();
 
     // TODO: Remove testSpr
-    const testSpr = Sprite.load_texture("assets/sprites/test/test.png");
-    defer testSpr.unload_texture();
-
-    var testAnimation = try Animation.init("assets/sprites/test/test", 5, true);
-    defer testAnimation.deinit();
-
-    var testAnimation2 = try Animation.init("assets/sprites/test/test", 5, false);
-    defer testAnimation2.deinit();
-
-    var testSpritesheet = SpriteSheet.load_sprite_sheet("assets/sprites/testsheet/testsheet-Sheet.png", 32, 32, 3, 1, utils.Point{ .x = 0, .y = 0 });
-    defer testSpritesheet.unload_sprite_sheet();
-
-    var testCustomSh = Animation1.init("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }, Delay.new(500, true), false);
-    defer testCustomSh.deinit();
-
-    var testSpritesheetAnimation = AnimationSpriteSheet.init("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }, false);
-    defer testSpritesheetAnimation.deinit();
-
-    var testSpritesheetAnimation2 = AnimationSpriteSheet.init("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }, true);
-    defer testSpritesheetAnimation2.deinit();
+    var testSprts = TestSprts{
+        .testSprite = Sprite.load_texture("assets/sprites/test/test.png"),
+        .testAnimation1 = try Animation.init("assets/sprites/test/test", 5, true),
+        .testAnimation2 = try Animation.init("assets/sprites/test/test", 5, false),
+        .testSpritesheet = SpriteSheet.load_sprite_sheet("assets/sprites/testsheet/testsheet-Sheet.png", 32, 32, 3, 1, utils.Point{ .x = 0, .y = 0 }),
+        .testSpritesheetAnimation1 = AnimationSpriteSheet.init("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }, false),
+        .testSpritesheetAnimation2 = AnimationSpriteSheet.init("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }, true),
+        .testCustomSh1 = Animation1.init("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }, Delay.new(500, true), false),
+        .testCustomSh2 = Animation2.init("assets/sprites/test/test", [2]usize{ 0, 0 }, [2]usize{ 5, 0 }, utils.Point{ .x = 0, .y = 0 }, Delay.new(550, true), true),
+    };
+    defer testSprts.testSprite.unload_texture();
+    defer testSprts.testAnimation1.deinit();
+    defer testSprts.testAnimation2.deinit();
+    defer testSprts.testSpritesheet.unload_sprite_sheet();
+    defer testSprts.testCustomSh1.deinit();
+    defer testSprts.testCustomSh2.deinit();
 
     while (render.shouldRender()) {
         // TODO: Remove testSpr
-        drawScene(render, &game, testSpr, &testAnimation, &testAnimation2, testSpritesheet, &testSpritesheetAnimation, &testSpritesheetAnimation2, &testCustomSh);
+        drawScene(render, &game, &testSprts);
         updateScene(render, &game) catch |err| std.debug.print("Update error: {any}\n", .{err});
         try drawUI(render, &game);
 
@@ -114,7 +122,7 @@ pub fn main() !void {
     }
 }
 
-fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Animation, animation2: *Animation, spritesheet: SpriteSheet, shAnimation: *AnimationSpriteSheet, shAnimation2: *AnimationSpriteSheet, customSh: *Animation1) void {
+fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts) void {
     const baseColor = utils.Color{
         .r = 0xaa,
         .g = 0xaa,
@@ -190,29 +198,30 @@ fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Anim
         .b = 0xff,
         .a = 0xff,
     };
-    utils.Raylib.DrawTexture(sprite.content, 400, 400, texColor.toRayColor());
-    utils.Raylib.DrawTexture(animation.sprites.items[animation.currentSprite].content, 500, 500, texColor.toRayColor());
-    animation.nextSprite();
+    utils.Raylib.DrawTexture(testSprts.testSprite.content, 400, 400, texColor.toRayColor());
+    utils.Raylib.DrawTexture(testSprts.testAnimation1.sprites.items[testSprts.testAnimation1.currentSprite].content, 500, 500, texColor.toRayColor());
+    testSprts.testAnimation1.nextSprite();
 
-    utils.Raylib.DrawTexture(animation2.sprites.items[animation2.currentSprite].content, 536, 500, texColor.toRayColor());
-    animation2.nextSprite();
+    utils.Raylib.DrawTexture(testSprts.testAnimation2.sprites.items[testSprts.testAnimation2.currentSprite].content, 536, 500, texColor.toRayColor());
+    testSprts.testAnimation2.nextSprite();
 
-    shAnimation.draw(&render, utils.Point{ .x = 136, .y = 100 });
-    shAnimation.nextSprite();
+    testSprts.testSpritesheetAnimation1.draw(&render, utils.Point{ .x = 136, .y = 100 });
+    testSprts.testSpritesheetAnimation1.nextSprite();
 
-    shAnimation2.draw(&render, utils.Point{ .x = 172, .y = 100 });
-    shAnimation2.nextSprite();
+    testSprts.testSpritesheetAnimation2.draw(&render, utils.Point{ .x = 172, .y = 100 });
+    testSprts.testSpritesheetAnimation2.nextSprite();
 
-    const row = customSh.currentSprite / customSh.sprites.gridRows;
-    const col = customSh.currentSprite / customSh.sprites.gridCols;
-    render.drawSpriteSheet(utils.Point{ .x = 232, .y = 100 }, customSh.sprites, row, col);
-    customSh.nextSprite();
+    const row1 = testSprts.testCustomSh1.currentSprite / testSprts.testCustomSh1.sprites.gridRows;
+    const col1 = testSprts.testCustomSh1.currentSprite / testSprts.testCustomSh1.sprites.gridCols;
+    render.drawSpriteSheet(utils.Point{ .x = 232, .y = 100 }, testSprts.testCustomSh1.sprites, row1, col1);
+    testSprts.testCustomSh1.nextSprite();
 
-    shAnimation2.nextSprite();
+    utils.Raylib.DrawTexture(testSprts.testCustomSh2.sprites.items[testSprts.testCustomSh2.currentSprite].content, 268, 100, texColor.toRayColor());
+    testSprts.testCustomSh2.nextSprite();
 
-    const srect = spritesheet.getSpriteRect(0, 1);
+    const srect = testSprts.testSpritesheet.getSpriteRect(0, 1);
     const rayvec = utils.Point{ .x = 100, .y = 100 };
-    utils.Raylib.DrawTextureRec(spritesheet.sheet, srect.toRayRect(), rayvec.toRayVec2(), texColor.toRayColor());
+    utils.Raylib.DrawTextureRec(testSprts.testSpritesheet.sheet, srect.toRayRect(), rayvec.toRayVec2(), texColor.toRayColor());
 
     // if (!delay.onCooldown()) {
     //     iloop = (iloop + 1) % 3;
