@@ -6,6 +6,9 @@ const Color = utils.Color;
 const Rectangle = utils.Rectangle;
 const Point = utils.Point;
 
+const spriteImport = @import("sprite.zig");
+const SpriteSheet = spriteImport.SpriteSheet;
+
 pub const Render = struct {
     live: bool,
 
@@ -66,6 +69,19 @@ pub const Render = struct {
         const x: c_int = @intFromFloat(position.x);
         const y: c_int = @intFromFloat(position.y);
         Raylib.DrawText(text, x, y, @as(c_int, @intCast(fontSize)), rayColor);
+    }
+
+    pub fn drawSpriteSheet(_: *const Render, position: utils.Point, spriteSheet: SpriteSheet, row: usize, col: usize) void {
+        const rayRect = spriteSheet.getSpriteRect(row, col).toRayRect();
+        const tint = Raylib.Color{
+            .r = 0xff,
+            .g = 0xff,
+            .b = 0xff,
+            .a = 0xff,
+        };
+        const rayPosition = position.toRayVec2();
+
+        Raylib.DrawTextureRec(spriteSheet.sheet, rayRect, rayPosition, tint);
     }
 
     pub fn getFrameTime(_: *const Render) f32 {
