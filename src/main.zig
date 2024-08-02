@@ -23,6 +23,9 @@ const Sprite = spriteImport.Sprite;
 const SpriteSheet = spriteImport.SpriteSheet;
 const Animation = @import("render/animation.zig").Animation;
 const AnimationSpriteSheet = @import("render/animation.zig").AnimationSpriteSheet;
+const Animation1 = @import("render/animation.zig").Animation1;
+
+const Delay = @import("utils/delay.zig").Delay;
 
 const input = @import("input/input.zig");
 const Input = input.Input;
@@ -92,6 +95,9 @@ pub fn main() !void {
     var testSpritesheet = SpriteSheet.load_sprite_sheet("assets/sprites/testsheet/testsheet-Sheet.png", 32, 32, 3, 1, utils.Point{ .x = 0, .y = 0 });
     defer testSpritesheet.unload_sprite_sheet();
 
+    var testCustomSh = Animation1.init("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }, Delay.new(500, true), false);
+    defer testCustomSh.deinit();
+
     var testSpritesheetAnimation = AnimationSpriteSheet.init("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }, false);
     defer testSpritesheetAnimation.deinit();
 
@@ -100,7 +106,7 @@ pub fn main() !void {
 
     while (render.shouldRender()) {
         // TODO: Remove testSpr
-        drawScene(render, &game, testSpr, &testAnimation, &testAnimation2, testSpritesheet, &testSpritesheetAnimation, &testSpritesheetAnimation2);
+        drawScene(render, &game, testSpr, &testAnimation, &testAnimation2, testSpritesheet, &testSpritesheetAnimation, &testSpritesheetAnimation2, &testCustomSh);
         updateScene(render, &game) catch |err| std.debug.print("Update error: {any}\n", .{err});
         try drawUI(render, &game);
 
@@ -108,7 +114,7 @@ pub fn main() !void {
     }
 }
 
-fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Animation, animation2: *Animation, spritesheet: SpriteSheet, shAnimation: *AnimationSpriteSheet, shAnimation2: *AnimationSpriteSheet) void {
+fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Animation, animation2: *Animation, spritesheet: SpriteSheet, shAnimation: *AnimationSpriteSheet, shAnimation2: *AnimationSpriteSheet, customSh: *Animation1) void {
     const baseColor = utils.Color{
         .r = 0xaa,
         .g = 0xaa,
@@ -195,6 +201,13 @@ fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Anim
     shAnimation.nextSprite();
 
     shAnimation2.draw(&render, utils.Point{ .x = 172, .y = 100 });
+    shAnimation2.nextSprite();
+
+    const row = customSh.currentSprite / customSh.sprites.gridRows;
+    const col = customSh.currentSprite / customSh.sprites.gridCols;
+    render.drawSpriteSheet(utils.Point{ .x = 232, .y = 100 }, customSh.sprites, row, col);
+    customSh.nextSprite();
+
     shAnimation2.nextSprite();
 
     const srect = spritesheet.getSpriteRect(0, 1);

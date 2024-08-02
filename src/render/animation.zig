@@ -16,6 +16,89 @@ const SpriteSheet = spriteImport.SpriteSheet;
 
 // const _Animation = struct { };
 
+pub fn _Animation(
+    value_type: type,
+    initFn: fn ([:0]const u8, [2]usize, [2]usize, utils.Point) value_type,
+    deinitFn: fn (sprites: *value_type) void,
+    maxSpritesFn: fn (sprites: value_type) usize,
+) type {
+    return struct {
+        const This = @This();
+
+        sprites: value_type,
+        currentSprite: usize,
+        delay: Delay,
+        reverseToLoop: bool,
+        onReverse: bool,
+        maxSprites: usize,
+
+        pub fn init(
+            filename: [:0]const u8,
+            spriteSize: [2]usize,
+            gridSize: [2]usize,
+            spritePadding: utils.Point,
+            delay: Delay,
+            reverseToLoop: bool,
+        ) This {
+            const sprites = initFn(filename, spriteSize, gridSize, spritePadding);
+            return This{
+                .sprites = sprites,
+                .maxSprites = maxSpritesFn(sprites),
+                .currentSprite = 0,
+                .delay = delay,
+                .reverseToLoop = reverseToLoop,
+                .onReverse = false,
+            };
+        }
+
+        pub fn deinit(self: *This) void {
+            deinitFn(&self.sprites);
+        }
+
+        pub fn nextSprite(self: *This) void {
+            if (self.delay.onCooldown()) return;
+
+            if (self.onReverse) {
+                self.applyReverse();
+            } else {
+                self.currentSprite += 1;
+            }
+
+            const shouldReset = self.currentSprite >= self.maxSprites;
+            const shouldReverse = !self.onReverse and shouldReset;
+            if (self.reverseToLoop and shouldReverse) {
+                self.onReverse = true;
+                self.currentSprite -= 1;
+            } else if (!self.reverseToLoop and shouldReset) self.currentSprite = 0;
+
+            self.delay.applyDelay();
+        }
+
+        fn applyReverse(self: *This) void {
+            if (self.currentSprite != 0) {
+                self.currentSprite -= 1;
+                return;
+            }
+            self.currentSprite = 0;
+            self.onReverse = false;
+        }
+    };
+}
+
+fn _initAnimation1(filename: [:0]const u8, sprtSize: [2]usize, gridSize: [2]usize, sprtPadding: utils.Point) SpriteSheet {
+    return SpriteSheet.load_sprite_sheet(filename, sprtSize[0], sprtSize[1], gridSize[0], gridSize[1], sprtPadding);
+}
+
+fn _deinitAnimation1(sprites: *SpriteSheet) void {
+    sprites.unload_sprite_sheet();
+}
+
+fn _maxSpritesFn(sprites: SpriteSheet) usize {
+    return sprites.gridRows * sprites.gridCols;
+}
+
+pub const Animation1 = _Animation(SpriteSheet, _initAnimation1, _deinitAnimation1, _maxSpritesFn);
+
 pub const Animation = struct {
     const This = @This();
     sprites: ArrayList(Sprite),
