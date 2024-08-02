@@ -7,6 +7,8 @@ const Delay = @import("../utils/delay.zig").Delay;
 const spriteImport = @import("sprite.zig");
 const Sprite = spriteImport.Sprite;
 
+// TODO: Try to use Sprites and SpriteSheets on animation
+
 pub const Animation = struct {
     const This = @This();
     sprites: ArrayList(Sprite),
