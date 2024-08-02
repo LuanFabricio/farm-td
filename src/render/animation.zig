@@ -56,7 +56,7 @@ pub const Animation = struct {
                 self.onReverse = true;
                 self.currentSprite -= 1;
             }
-        }
+        } else if (self.currentSprite >= self.sprites.items.len) self.currentSprite = 0;
 
         self.delay.applyDelay();
     }
