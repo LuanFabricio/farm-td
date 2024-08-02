@@ -22,6 +22,7 @@ const spriteImport = @import("render/sprite.zig");
 const Sprite = spriteImport.Sprite;
 const SpriteSheet = spriteImport.SpriteSheet;
 const Animation = @import("render/animation.zig").Animation;
+const AnimationSpriteSheet = @import("render/animation.zig").AnimationSpriteSheet;
 
 const input = @import("input/input.zig");
 const Input = input.Input;
@@ -91,9 +92,15 @@ pub fn main() !void {
     var testSpritesheet = SpriteSheet.load_sprite_sheet("assets/sprites/testsheet/testsheet-Sheet.png", 32, 32, 3, 1, utils.Point{ .x = 0, .y = 0 });
     defer testSpritesheet.unload_sprite_sheet();
 
+    var testSpritesheetAnimation = AnimationSpriteSheet.init("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }, false);
+    defer testSpritesheetAnimation.deinit();
+
+    var testSpritesheetAnimation2 = AnimationSpriteSheet.init("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }, true);
+    defer testSpritesheetAnimation2.deinit();
+
     while (render.shouldRender()) {
         // TODO: Remove testSpr
-        drawScene(render, &game, testSpr, &testAnimation, &testAnimation2, testSpritesheet);
+        drawScene(render, &game, testSpr, &testAnimation, &testAnimation2, testSpritesheet, &testSpritesheetAnimation, &testSpritesheetAnimation2);
         updateScene(render, &game) catch |err| std.debug.print("Update error: {any}\n", .{err});
         try drawUI(render, &game);
 
@@ -101,7 +108,7 @@ pub fn main() !void {
     }
 }
 
-fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Animation, animation2: *Animation, spritesheet: SpriteSheet) void {
+fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Animation, animation2: *Animation, spritesheet: SpriteSheet, shAnimation: *AnimationSpriteSheet, shAnimation2: *AnimationSpriteSheet) void {
     const baseColor = utils.Color{
         .r = 0xaa,
         .g = 0xaa,
@@ -183,6 +190,12 @@ fn drawScene(render: Render, game: *const Game, sprite: Sprite, animation: *Anim
 
     utils.Raylib.DrawTexture(animation2.sprites.items[animation2.currentSprite].content, 536, 500, texColor.toRayColor());
     animation2.nextSprite();
+
+    shAnimation.draw(&render, utils.Point{ .x = 136, .y = 100 });
+    shAnimation.nextSprite();
+
+    shAnimation2.draw(&render, utils.Point{ .x = 172, .y = 100 });
+    shAnimation2.nextSprite();
 
     const srect = spritesheet.getSpriteRect(0, 1);
     const rayvec = utils.Point{ .x = 100, .y = 100 };

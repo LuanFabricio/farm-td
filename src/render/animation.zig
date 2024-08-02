@@ -2,12 +2,19 @@ const std = @import("std");
 const Allocator = std.heap.page_allocator;
 const ArrayList = std.ArrayList;
 
+const utils = @import("../utils/utils.zig");
+
 const Delay = @import("../utils/delay.zig").Delay;
+
+const Render = @import("render.zig").Render;
 
 const spriteImport = @import("sprite.zig");
 const Sprite = spriteImport.Sprite;
+const SpriteSheet = spriteImport.SpriteSheet;
 
 // TODO: Try to use Sprites and SpriteSheets on animation
+
+// const _Animation = struct { };
 
 pub const Animation = struct {
     const This = @This();
@@ -51,12 +58,12 @@ pub const Animation = struct {
             self.currentSprite += 1;
         }
 
-        if (self.reverseToLoop) {
-            if (!self.onReverse and self.currentSprite >= self.sprites.items.len) {
-                self.onReverse = true;
-                self.currentSprite -= 1;
-            }
-        } else if (self.currentSprite >= self.sprites.items.len) self.currentSprite = 0;
+        const shouldReset = self.currentSprite >= self.sprites.items.len;
+        const shouldReverse = !self.onReverse and shouldReset;
+        if (self.reverseToLoop and shouldReverse) {
+            self.onReverse = true;
+            self.currentSprite -= 1;
+        } else if (!self.reverseToLoop and shouldReset) self.currentSprite = 0;
 
         self.delay.applyDelay();
     }
@@ -68,5 +75,66 @@ pub const Animation = struct {
         }
         self.currentSprite = 0;
         self.onReverse = false;
+    }
+};
+
+pub const AnimationSpriteSheet = struct {
+    const This = @This();
+    spriteSheet: SpriteSheet,
+    delay: Delay,
+    count: usize,
+    reverseToLoop: bool,
+    onReverse: bool,
+
+    pub fn init(filepath: [:0]const u8, spriteSize: [2]usize, grid: [2]usize, padding: utils.Point, reverseToLoop: bool) This {
+        const spriteSheet = SpriteSheet.load_sprite_sheet(filepath, spriteSize[0], spriteSize[1], grid[0], grid[1], padding);
+
+        return This{
+            .spriteSheet = spriteSheet,
+            .delay = Delay.new(500, true),
+            .count = 0,
+            .reverseToLoop = reverseToLoop,
+            .onReverse = false,
+        };
+    }
+
+    pub fn deinit(self: *This) void {
+        self.spriteSheet.unload_sprite_sheet();
+    }
+
+    pub fn nextSprite(self: *This) void {
+        if (self.delay.onCooldown()) return;
+
+        if (self.onReverse) {
+            self.applyReverse();
+        } else {
+            self.count += 1;
+        }
+
+        const shouldReset = self.count >= (self.spriteSheet.gridRows * self.spriteSheet.gridCols);
+        const shouldReverse = !self.onReverse and shouldReset;
+        if (self.reverseToLoop and shouldReverse) {
+            self.onReverse = true;
+            self.count -= 1;
+        } else if (!self.reverseToLoop and shouldReset) self.count = 0;
+
+        self.delay.applyDelay();
+    }
+
+    fn applyReverse(self: *This) void {
+        if (self.count != 0) {
+            self.count -= 1;
+            return;
+        }
+
+        self.count = 0;
+        self.onReverse = false;
+    }
+
+    pub fn draw(self: *const This, render: *const Render, position: utils.Point) void {
+        const row = self.count / self.spriteSheet.gridRows;
+        const col = self.count / self.spriteSheet.gridCols;
+
+        render.drawSpriteSheet(position, self.spriteSheet, row, col);
     }
 };
