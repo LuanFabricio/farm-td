@@ -93,11 +93,38 @@ fn _deinitAnimation1(sprites: *SpriteSheet) void {
     sprites.unload_sprite_sheet();
 }
 
-fn _maxSpritesFn(sprites: SpriteSheet) usize {
+fn _maxSpritesFn1(sprites: SpriteSheet) usize {
     return sprites.gridRows * sprites.gridCols;
 }
 
-pub const Animation1 = _Animation(SpriteSheet, _initAnimation1, _deinitAnimation1, _maxSpritesFn);
+pub const Animation1 = _Animation(SpriteSheet, _initAnimation1, _deinitAnimation1, _maxSpritesFn1);
+
+fn _initAnimation2(filename: [:0]const u8, _: [2]usize, gridSize: [2]usize, _: utils.Point) ArrayList(Sprite) {
+    var sprites = ArrayList(Sprite).init(Allocator);
+
+    // Only uses first item
+    for (1..(gridSize[0] + 1)) |idx| {
+        const file = std.fmt.allocPrintZ(Allocator, "{s}{d}.png", .{ filename, idx }) catch unreachable;
+        defer Allocator.free(file);
+
+        sprites.append(Sprite.load_texture(file)) catch unreachable;
+    }
+
+    return sprites;
+}
+
+fn _deinitAnimation2(sprites: *ArrayList(Sprite)) void {
+    for (sprites.items) |*sprt| {
+        sprt.unload_texture();
+    }
+    sprites.deinit();
+}
+
+fn _maxSpritesFn2(sprites: ArrayList(Sprite)) usize {
+    return sprites.items.len;
+}
+
+pub const Animation2 = _Animation(ArrayList(Sprite), _initAnimation2, _deinitAnimation2, _maxSpritesFn2);
 
 pub const Animation = struct {
     const This = @This();
