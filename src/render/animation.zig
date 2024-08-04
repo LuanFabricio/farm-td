@@ -14,73 +14,85 @@ const SpriteSheet = spriteImport.SpriteSheet;
 
 // TODO: Try to use Sprites and SpriteSheets on animation
 
-// const _Animation = struct { };
+const AnimationState = struct {
+    const This = @This();
+
+    currentSprite: usize,
+    delay: Delay,
+    reverseToLoop: bool,
+    onReverse: bool,
+    maxSprites: usize,
+
+    fn new(delay: Delay, reverseToLoop: bool) This {
+        return This{
+            .maxSprites = 0,
+            .currentSprite = 0,
+            .delay = delay,
+            .reverseToLoop = reverseToLoop,
+            .onReverse = false,
+        };
+    }
+
+    pub fn nextSprite(self: *This) void {
+        if (self.delay.onCooldown()) return;
+
+        if (self.onReverse) {
+            self.applyReverse();
+        } else {
+            self.currentSprite += 1;
+        }
+
+        const shouldReset = self.currentSprite >= self.maxSprites;
+        const shouldReverse = !self.onReverse and shouldReset;
+        if (self.reverseToLoop and shouldReverse) {
+            self.onReverse = true;
+            self.currentSprite -= 1;
+        } else if (!self.reverseToLoop and shouldReset) self.currentSprite = 0;
+
+        self.delay.applyDelay();
+    }
+
+    fn applyReverse(self: *This) void {
+        if (self.currentSprite != 0) {
+            self.currentSprite -= 1;
+            return;
+        }
+        self.currentSprite = 0;
+        self.onReverse = false;
+    }
+};
 
 fn _Animation(
     value_type: type,
-    initFn: fn ([:0]const u8, [2]usize, [2]usize, utils.Point) value_type,
+    initFnType: type,
+    initSpritesFn: initFnType,
     deinitFn: fn (sprites: *value_type) void,
     maxSpritesFn: fn (sprites: value_type) usize,
 ) type {
     return struct {
         const This = @This();
+        pub const initSprites: initFnType = initSpritesFn;
 
         sprites: value_type,
-        currentSprite: usize,
-        delay: Delay,
-        reverseToLoop: bool,
-        onReverse: bool,
-        maxSprites: usize,
+        animationState: AnimationState,
+        // init: initFnType,
 
         pub fn init(
-            filename: [:0]const u8,
-            spriteSize: [2]usize,
-            gridSize: [2]usize,
-            spritePadding: utils.Point,
+            sprites: value_type,
             delay: Delay,
             reverseToLoop: bool,
         ) This {
-            const sprites = initFn(filename, spriteSize, gridSize, spritePadding);
+            // const sprites = initFn(filename, spriteSize, gridSize, spritePadding);
+            var animationState = AnimationState.new(delay, reverseToLoop);
+            animationState.maxSprites = maxSpritesFn(sprites);
             return This{
                 .sprites = sprites,
-                .maxSprites = maxSpritesFn(sprites),
-                .currentSprite = 0,
-                .delay = delay,
-                .reverseToLoop = reverseToLoop,
-                .onReverse = false,
+                .animationState = animationState,
             };
         }
 
         pub fn deinit(self: *This) void {
             deinitFn(&self.sprites);
-        }
-
-        pub fn nextSprite(self: *This) void {
-            if (self.delay.onCooldown()) return;
-
-            if (self.onReverse) {
-                self.applyReverse();
-            } else {
-                self.currentSprite += 1;
-            }
-
-            const shouldReset = self.currentSprite >= self.maxSprites;
-            const shouldReverse = !self.onReverse and shouldReset;
-            if (self.reverseToLoop and shouldReverse) {
-                self.onReverse = true;
-                self.currentSprite -= 1;
-            } else if (!self.reverseToLoop and shouldReset) self.currentSprite = 0;
-
-            self.delay.applyDelay();
-        }
-
-        fn applyReverse(self: *This) void {
-            if (self.currentSprite != 0) {
-                self.currentSprite -= 1;
-                return;
-            }
-            self.currentSprite = 0;
-            self.onReverse = false;
         }
     };
 }
@@ -97,13 +109,19 @@ fn _maxSpritesFnSpritesheet(sprites: SpriteSheet) usize {
     return sprites.gridRows * sprites.gridCols;
 }
 
-pub const AnimationSpritesheet = _Animation(SpriteSheet, _initAnimationSpritesheet, _deinitAnimationSpritesheet, _maxSpritesFnSpritesheet);
+pub const AnimationSpritesheet = _Animation(
+    SpriteSheet,
+    @TypeOf(_initAnimationSpritesheet),
+    _initAnimationSpritesheet,
+    _deinitAnimationSpritesheet,
+    _maxSpritesFnSpritesheet,
+);
 
-fn _initAnimationSprites(filename: [:0]const u8, _: [2]usize, gridSize: [2]usize, _: utils.Point) ArrayList(Sprite) {
+fn _initAnimationSprites(filename: [:0]const u8, nSprites: usize) ArrayList(Sprite) {
     var sprites = ArrayList(Sprite).init(Allocator);
 
     // Only uses first item
-    for (1..(gridSize[0] + 1)) |idx| {
+    for (1..(nSprites + 1)) |idx| {
         const file = std.fmt.allocPrintZ(Allocator, "{s}{d}.png", .{ filename, idx }) catch unreachable;
         defer Allocator.free(file);
 
@@ -124,7 +142,13 @@ fn _maxSpritesFnSprites(sprites: ArrayList(Sprite)) usize {
     return sprites.items.len;
 }
 
-pub const AnimationSprites = _Animation(ArrayList(Sprite), _initAnimationSprites, _deinitAnimationSprites, _maxSpritesFnSprites);
+pub const AnimationSprites = _Animation(
+    ArrayList(Sprite),
+    @TypeOf(_initAnimationSprites),
+    _initAnimationSprites,
+    _deinitAnimationSprites,
+    _maxSpritesFnSprites,
+);
 
 // pub const Animation = struct {
 //     const This = @This();
