@@ -37,6 +37,9 @@ const Game = gameImport.Game;
 const TurretGrid = gameImport.TurretGrid;
 const FarmGrid = gameImport.FarmGrid;
 
+const SCREEN_WIDTH: usize = 1280;
+const SCREEN_HEIGHT: usize = 720;
+
 const gridSize = 96;
 const turretGridOffset = utils.Point{ .x = @as(f32, @floatFromInt(gridSize)) / 2 + gridSize / 2, .y = gridSize };
 const farmGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 5 + gridSize / 2, .y = gridSize };
@@ -91,11 +94,10 @@ pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
     try stdout.writeAll("Hello world!\n");
 
-    var render = Render.init();
+    var render = Render.init(SCREEN_WIDTH, SCREEN_HEIGHT);
     defer render.deinit();
 
     // TODO: Remove testSpr
-    std.debug.print("Ok??\n", .{});
     var testSprts = TestSprts{
         // .testSprite = Sprite.load_texture("assets/sprites/test/test.png"),
         // .testAnimation1 = try Animation.init("assets/sprites/test/test", 5, true),
@@ -278,12 +280,14 @@ fn updateScene(render: Render, game: *Game) !void {
     try game.spawnEnemies();
 
     const frameTime = render.getFrameTime();
+    // std.debug.print("Moving {d} enemys\n", .{game.enemies.items.len});
     for (game.enemies.items) |currentEnemy| {
         currentEnemy.move(frameTime);
     }
 
     try game.turretShoot(turretGridOffset, gridSize);
-    game.cleanDeadEnemies();
+    // TODO(luan): Maybe move maxWidth to Game property
+    game.cleanDeadEnemies(@as(f32, @floatFromInt(render.screenWidth)));
 
     try game.enemyAttack(turretGridOffset, gridSize);
     game.cleanDeadTurrets();
