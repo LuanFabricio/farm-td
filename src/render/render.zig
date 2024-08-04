@@ -10,12 +10,16 @@ const spriteImport = @import("sprite.zig");
 const SpriteSheet = spriteImport.SpriteSheet;
 
 pub const Render = struct {
+    screenWidth: usize,
+    screenHeight: usize,
     live: bool,
 
-    pub fn init() Render {
-        Raylib.InitWindow(1280, 720, "Farm TD");
+    pub fn init(width: usize, height: usize) Render {
+        Raylib.InitWindow(@intCast(width), @intCast(height), "Farm TD");
         Raylib.SetTargetFPS(60);
         return .{
+            .screenWidth = width,
+            .screenHeight = height,
             .live = true,
         };
     }
