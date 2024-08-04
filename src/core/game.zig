@@ -152,10 +152,13 @@ pub const Game = struct {
         }
     }
 
-    pub fn cleanDeadEnemies(self: *This) void {
+    pub fn cleanDeadEnemies(self: *This, maxWidth: f32) void {
         var i: usize = 0;
         while (i < self.enemies.items.len) : (i += 1) {
-            if (self.enemies.items[i].entity.status.health <= 0) {
+            const enemy = self.enemies.items[i];
+            const enemyHp = enemy.entity.status.health;
+            const enemyLeft = enemy.box.x;
+            if (enemyHp <= 0 or enemyLeft > maxWidth) {
                 const enemyPtr = self.enemies.swapRemove(i);
 
                 Allocator.destroy(enemyPtr);
