@@ -21,10 +21,11 @@ const Render = @import("render/render.zig").Render;
 const spriteImport = @import("render/sprite.zig");
 const Sprite = spriteImport.Sprite;
 const SpriteSheet = spriteImport.SpriteSheet;
-// const Animation = @import("render/animation.zig").Animation;
-// const AnimationSpriteSheet = @import("render/animation.zig").AnimationSpriteSheet;
-const AnimationSpritesheet = @import("render/animation.zig").AnimationSpritesheet;
-const AnimationSprites = @import("render/animation.zig").AnimationSprites;
+
+const animationImport = @import("render/animation.zig");
+const AnimationSpritesheet = animationImport.AnimationSpritesheet;
+const AnimationSprites = animationImport.AnimationSprites;
+const AnimationColor = animationImport.AnimationColor;
 
 const Delay = @import("utils/delay.zig").Delay;
 
@@ -46,19 +47,10 @@ const farmGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)
 const farmBuyGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 2 + gridSize / 2, .y = gridSize };
 const turretBuyGridOffset = utils.Point{ .x = 1280 - @as(f32, @floatFromInt(gridSize)) * 2 + gridSize / 2, .y = gridSize * 3 };
 
-// const Delay = @import("utils/delay.zig").Delay;
-// var delay: Delay = undefined;
-// var iloop: usize = 0;
-
 const TestSprts = struct {
-    // testSprite: Sprite,
-    // testAnimation1: Animation,
-    // testAnimation2: Animation,
-    // testSpritesheet: SpriteSheet,
-    // testSpritesheetAnimation1: AnimationSpriteSheet,
-    // testSpritesheetAnimation2: AnimationSpriteSheet,
     testCustomSh1: AnimationSpritesheet,
     testCustomSh2: AnimationSprites,
+    testColors: AnimationColor,
 };
 
 pub fn main() !void {
@@ -97,17 +89,31 @@ pub fn main() !void {
     var render = Render.init(SCREEN_WIDTH, SCREEN_HEIGHT);
     defer render.deinit();
 
+    const testColors = [_]utils.Color{
+        utils.Color{ .r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff },
+        utils.Color{ .r = 0xfa, .g = 0xfa, .b = 0xfa, .a = 0xff },
+        utils.Color{ .r = 0xf0, .g = 0xf0, .b = 0xf0, .a = 0xff },
+        utils.Color{ .r = 0xef, .g = 0xef, .b = 0xef, .a = 0xff },
+        utils.Color{ .r = 0xea, .g = 0xea, .b = 0xea, .a = 0xff },
+        utils.Color{ .r = 0xe0, .g = 0xe0, .b = 0xe0, .a = 0xff },
+        utils.Color{ .r = 0xdf, .g = 0xdf, .b = 0xdf, .a = 0xff },
+        utils.Color{ .r = 0xda, .g = 0xda, .b = 0xda, .a = 0xff },
+        utils.Color{ .r = 0xd0, .g = 0xd0, .b = 0xd0, .a = 0xff },
+        utils.Color{ .r = 0xcf, .g = 0xcf, .b = 0xcf, .a = 0xff },
+        utils.Color{ .r = 0xca, .g = 0xca, .b = 0xca, .a = 0xff },
+        utils.Color{ .r = 0xc0, .g = 0xc0, .b = 0xc0, .a = 0xff },
+        utils.Color{ .r = 0xbf, .g = 0xbf, .b = 0xbf, .a = 0xff },
+        utils.Color{ .r = 0xba, .g = 0xba, .b = 0xba, .a = 0xff },
+        utils.Color{ .r = 0xb0, .g = 0xb0, .b = 0xb0, .a = 0xff },
+        utils.Color{ .r = 0xaf, .g = 0xaf, .b = 0xaf, .a = 0xff },
+        utils.Color{ .r = 0xaa, .g = 0xaa, .b = 0xaa, .a = 0xff },
+        utils.Color{ .r = 0xa0, .g = 0xa0, .b = 0xa0, .a = 0xff },
+    };
     // TODO: Remove testSpr
     var testSprts = TestSprts{
-        // .testSprite = Sprite.load_texture("assets/sprites/test/test.png"),
-        // .testAnimation1 = try Animation.init("assets/sprites/test/test", 5, true),
-        // .testAnimation2 = try Animation.init("assets/sprites/test/test", 5, false),
-        // .testSpritesheet = SpriteSheet.load_sprite_sheet("assets/sprites/testsheet/testsheet-Sheet.png", 32, 32, 3, 1, utils.Point{ .x = 0, .y = 0 }),
-        // .testSpritesheetAnimation1 = AnimationSpriteSheet.init("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }, false),
-        // .testSpritesheetAnimation2 = AnimationSpriteSheet.init("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }, true),
         .testCustomSh1 = AnimationSpritesheet.init(
             AnimationSpritesheet.initSprites("assets/sprites/testsheet/testsheet-Sheet.png", [2]usize{ 32, 32 }, [2]usize{ 3, 1 }, utils.Point{ .x = 0, .y = 0 }),
-            Delay.new(500, true),
+            Delay.new(125, true),
             false,
         ),
         .testCustomSh2 = AnimationSprites.init(
@@ -115,13 +121,11 @@ pub fn main() !void {
             Delay.new(550, true),
             true,
         ),
+        .testColors = AnimationColor.init(AnimationColor.initSprites(testColors.len, &testColors), Delay.new(500, true), true),
     };
-    // defer testSprts.testSprite.unload_texture();
-    // defer testSprts.testAnimation1.deinit();
-    // defer testSprts.testAnimation2.deinit();
-    // defer testSprts.testSpritesheet.unload_sprite_sheet();
     defer testSprts.testCustomSh1.deinit();
     defer testSprts.testCustomSh2.deinit();
+    defer testSprts.testColors.deinit();
 
     while (render.shouldRender()) {
         // TODO: Remove testSpr
@@ -140,12 +144,6 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts) void {
         .b = 0xaa,
         .a = 0xff,
     };
-    // const healthColor = utils.Color{
-    //     .r = 0xff,
-    //     .g = 0x00,
-    //     .b = 0x00,
-    //     .a = 0xff,
-    // };
 
     render.beginDraw();
     defer render.endDraw();
@@ -230,18 +228,10 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts) void {
     utils.Raylib.DrawTexture(testSprts.testCustomSh2.sprites.items[testSprts.testCustomSh2.animationState.currentSprite].content, 268, 100, texColor.toRayColor());
     testSprts.testCustomSh2.animationState.nextSprite();
 
-    // const srect = testSprts.testSpritesheet.getSpriteRect(0, 1);
-    // const rayvec = utils.Point{ .x = 100, .y = 100 };
-    // utils.Raylib.DrawTextureRec(testSprts.testSpritesheet.sheet, srect.toRayRect(), rayvec.toRayVec2(), texColor.toRayColor());
-
-    // if (!delay.onCooldown()) {
-    //     iloop = (iloop + 1) % 3;
-    //     std.debug.print("iloop: {d}\n", .{iloop});
-    //     std.debug.print("delay: {any}\n", .{delay});
-
-    //     std.debug.print("Rect: {any}\n", .{srect});
-    //     delay.applyDelay();
-    // }
+    const colorIdx = testSprts.testColors.animationState.currentSprite;
+    std.debug.print("Color: {any}\n", .{testSprts.testColors.sprites.items[colorIdx]});
+    render.drawRectangle(400, 400, 512, 512, testSprts.testColors.sprites.items[colorIdx]);
+    testSprts.testColors.animationState.nextSprite();
 }
 
 fn updateScene(render: Render, game: *Game) !void {
