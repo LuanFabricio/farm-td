@@ -18,28 +18,37 @@ pub const HitBox = struct {
 
         const baseRect: utils.Rectangle = self.hitbox;
 
-        var baseHb = This.new(baseRect);
+        const baseHb = This.new(baseRect);
         var hb = This.new(baseRect);
-        const step: f32 = 0.1;
-        for (0..12) |_| {
-            hb.hitbox.x = baseHb.hitbox.x + speed.x * step;
-            hb.hitbox.y = baseHb.hitbox.y;
+        const stepSize = 12;
+        const step: f32 = 1.0 / @as(f32, @floatFromInt(stepSize));
+        for (1..stepSize + 1) |idx| {
+            const currentSpeedStep = step * @as(f32, @floatFromInt(idx));
+            const lastSpeedStep = step * @as(f32, @floatFromInt(idx - 1));
 
+            hb.hitbox.x = baseHb.hitbox.x + speed.x * currentSpeedStep;
+            hb.hitbox.y = baseHb.hitbox.y + speed.y * lastSpeedStep;
             if (hb.checkCollision(target)) return true;
 
-            hb.hitbox.x = baseHb.hitbox.x;
-            hb.hitbox.y = baseHb.hitbox.y + speed.y * step;
+            hb.hitbox.x = baseHb.hitbox.x + speed.x * lastSpeedStep;
+            hb.hitbox.y = baseHb.hitbox.y + speed.y * currentSpeedStep;
             if (hb.checkCollision(target)) return true;
 
-            baseHb.hitbox.x += speed.x * step;
-            baseHb.hitbox.y += speed.y * step;
+            hb.hitbox.y = baseHb.hitbox.y + speed.y * currentSpeedStep;
+            hb.hitbox.x = baseHb.hitbox.x + speed.x * currentSpeedStep;
+            if (hb.checkCollision(target)) return true;
         }
 
         return false;
     }
 
     pub fn checkCollision(self: *const This, target: *const This) bool {
-        return self.hitbox.x + self.hitbox.w >= target.hitbox.x and self.hitbox.x <= target.hitbox.x + target.hitbox.x and self.hitbox.y + self.hitbox.h >= target.hitbox.y and self.hitbox.y <= target.hitbox.y + target.hitbox.h;
+        const rightLeft = self.hitbox.x + self.hitbox.w >= target.hitbox.x;
+        const leftRight = self.hitbox.x <= target.hitbox.x + target.hitbox.x;
+        const bottomUp = self.hitbox.y + self.hitbox.h >= target.hitbox.y;
+        const upBottom = self.hitbox.y <= target.hitbox.y + target.hitbox.h;
+
+        return rightLeft and leftRight and bottomUp and upBottom;
     }
 
     pub fn canCollide(self: *const This, target: *const This, speed: utils.Point) bool {
