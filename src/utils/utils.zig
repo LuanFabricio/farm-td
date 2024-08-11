@@ -1,3 +1,5 @@
+const Pi = @import("std").math.pi;
+
 pub const Raylib = @cImport({
     @cInclude("raylib.h");
     @cInclude("raymath.h");
@@ -15,6 +17,8 @@ pub const Color = struct {
 };
 
 pub const Point = struct {
+    const This = @This();
+    const radCast: f64 = Pi / 180.0;
     x: f32,
     y: f32,
 
@@ -30,6 +34,19 @@ pub const Point = struct {
         return Raylib.Vector2{
             .x = self.x,
             .y = self.y,
+        };
+    }
+
+    pub fn rotate(self: *const This, angle: f64) This {
+        const rad: f64 = radCast * angle;
+        const cos = @cos(rad);
+        const sin = @sin(rad);
+        const rx = self.x * cos - self.y * sin;
+        const ry = self.x * sin + self.y * cos;
+
+        return This{
+            .x = @as(f32, @floatCast(rx)),
+            .y = @as(f32, @floatCast(ry)),
         };
     }
 };
