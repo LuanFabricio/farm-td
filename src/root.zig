@@ -9,5 +9,6 @@ test {
     _ = @import("core/test_enemy.zig");
     _ = @import("core/test_farm.zig");
     _ = @import("utils/test_delay.zig");
+    _ = @import("utils/test_utils_rectangle.zig");
     _ = @import("collision/test_hitbox.zig");
 }
