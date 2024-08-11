@@ -74,4 +74,14 @@ pub const Rectangle = struct {
             .y = cy,
         };
     }
+
+    pub fn getPoints(self: *const Rectangle) [4]Point {
+        const lt = Point{ .x = self.x, .y = self.y };
+        const rt = Point{ .x = self.x + self.w, .y = self.y };
+        const lb = Point{ .x = self.x, .y = self.y + self.h };
+        const rb = Point{ .x = self.x + self.w, .y = self.y + self.h };
+
+        // Left-Top, Right-Top, Left-Bot, Right-Bot
+        return [4]Point{ lt, rt, lb, rb };
+    }
 };
