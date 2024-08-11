@@ -82,6 +82,10 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    lib_unit_tests.addIncludePath(.{ .path = "/usr/local/include/raylib.h" });
+    lib_unit_tests.addIncludePath(.{ .path = "/usr/local/include/raymath.h" });
+    lib_unit_tests.linkLibC();
+    lib_unit_tests.linkSystemLibrary("raylib");
 
     const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
 
