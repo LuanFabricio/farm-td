@@ -1,5 +1,6 @@
 const std = @import("std");
 const expect = std.testing.expect;
+const expectError = std.testing.expectError;
 
 const utils = @import("../utils/utils.zig");
 
@@ -60,6 +61,24 @@ test "It should check if other function collides" {
     try expect(!func31.canCollide(func32));
 }
 
-test "It should get the point of collisio" {
-    // TODO(luan): Write collidePoint test.
+test "It should get the point of collision" {
+    const func11 = Function{ .a = 1.0, .b = 1.0, .mainAxis = Function.Axis.X };
+    const func12 = Function{ .a = 2.0, .b = -3.0, .mainAxis = Function.Axis.X };
+
+    const collisionPoint1 = func11.collidePoint(func12) catch unreachable;
+    try expect(collisionPoint1.x == 4.0);
+    try expect(collisionPoint1.y == 5.0);
+
+    const func21 = Function{ .a = 1.0, .b = 1.0, .mainAxis = Function.Axis.X };
+    const func22 = Function{ .a = 0.0, .b = -3.0, .mainAxis = Function.Axis.Y };
+
+    const collisionPoint2 = func21.collidePoint(func22) catch unreachable;
+    try expect(collisionPoint2.x == -4.0);
+    try expect(collisionPoint2.y == -3.0);
+
+    const func31 = Function{ .a = 1.0, .b = 1.0, .mainAxis = Function.Axis.X };
+    const func32 = Function{ .a = 1.0, .b = -3.0, .mainAxis = Function.Axis.X };
+
+    const collisionPoint3 = func31.collidePoint(func32);
+    try expectError(error.CannotCollide, collisionPoint3);
 }
