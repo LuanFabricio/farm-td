@@ -2,14 +2,19 @@ const std = @import("std");
 
 const utils = @import("../utils/utils.zig");
 
+const functionImport = @import("function.zig");
+const Function = functionImport.Function;
+
 pub const HitBox = struct {
     const This = @This();
 
     hitbox: utils.Rectangle,
+    angle: f32,
 
     pub fn new(hitbox: utils.Rectangle) This {
         return This{
             .hitbox = hitbox,
+            .angle = 0.0,
         };
     }
 
@@ -64,5 +69,53 @@ pub const HitBox = struct {
         const ySampleSignal = dySignal == speedYSignal;
 
         return xSampleSignal and ySampleSignal;
+    }
+
+    const Lines = struct {
+        function: Function,
+        points: [2]utils.Point,
+    };
+    pub fn getLines(self: *const This) [4]Lines {
+        var copyBox = self.hitbox.clone();
+        copyBox.x = -copyBox.w / 2;
+        copyBox.y = -copyBox.h / 2;
+
+        var points = copyBox.getPoints();
+        for (&points) |*point| {
+            point.* = point.rotate(self.angle);
+            point.x += self.hitbox.x + self.hitbox.w / 2;
+            point.y += self.hitbox.y + self.hitbox.h / 2;
+        }
+
+        return [4]Lines{
+            .{ .function = Function.fromPoints(points[1], points[0]), .points = [2]utils.Point{ points[1], points[0] } },
+            .{ .function = Function.fromPoints(points[2], points[0]), .points = [2]utils.Point{ points[2], points[0] } },
+            .{ .function = Function.fromPoints(points[3], points[1]), .points = [2]utils.Point{ points[3], points[1] } },
+            .{ .function = Function.fromPoints(points[3], points[2]), .points = [2]utils.Point{ points[3], points[2] } },
+        };
+    }
+
+    pub fn getIntersections(self: *const This, other: This) ?utils.Point {
+        const selfLines = self.getLines();
+        const otherLines = other.getLines();
+
+        for (0..selfLines.len) |selfIdx| {
+            const selfLine = selfLines[selfIdx];
+            // const selfPoints = selfLine.points;
+            for (0..otherLines.len) |otherIdx| {
+                const otherLine = otherLines[otherIdx];
+                const point = selfLine.function.collidePoint(otherLine.function) catch continue;
+
+                // const onSelfPoint = point.x >= selfPoints[0].x and point.x <= selfPoints[1].x;
+                // const otherPoints = otherLine.points;
+                // const onOtherPoint = point.x >= otherPoints[0].x and point.x <= otherPoints[1].x;
+                //if (onSelfPoint and onOtherPoint) {
+                std.debug.print("Point at {d} x {d}\n", .{ selfIdx, otherIdx });
+                return point;
+                //}
+            }
+        }
+
+        return null;
     }
 };

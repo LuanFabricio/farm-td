@@ -36,6 +36,10 @@ pub const Function = struct {
         };
     }
 
+    pub fn calc(self: *const This, x: f32) f32 {
+        return self.a * x + self.b;
+    }
+
     pub fn canCollide(self: *const This, other: This) bool {
         if (self.mainAxis != other.mainAxis) return true;
         return @abs(self.a - other.a) >= epsilonf32;

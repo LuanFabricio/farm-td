@@ -38,6 +38,9 @@ const Game = gameImport.Game;
 const TurretGrid = gameImport.TurretGrid;
 const FarmGrid = gameImport.FarmGrid;
 
+const hitboxImport = @import("collision/hitbox.zig");
+const HitBox = hitboxImport.HitBox;
+
 const SCREEN_WIDTH: usize = 1280;
 const SCREEN_HEIGHT: usize = 720;
 
@@ -51,6 +54,11 @@ const TestSprts = struct {
     testCustomSh1: AnimationSpritesheet,
     testCustomSh2: AnimationSprites,
     testColors: AnimationColor,
+};
+
+const TestHB = struct {
+    hb1: HitBox,
+    hb2: HitBox,
 };
 
 pub fn main() !void {
@@ -127,9 +135,16 @@ pub fn main() !void {
     defer testSprts.testCustomSh2.deinit();
     defer testSprts.testColors.deinit();
 
+    var testHB = TestHB{
+        .hb1 = HitBox.new(utils.Rectangle{ .x = 242, .y = 42, .w = 128, .h = 128 }),
+        .hb2 = HitBox.new(utils.Rectangle{ .x = 300, .y = 42, .w = 128, .h = 128 }),
+    };
+    testHB.hb1.angle = 45;
+    testHB.hb2.angle = 0;
+
     while (render.shouldRender()) {
         // TODO: Remove testSpr
-        drawScene(render, &game, &testSprts);
+        drawScene(render, &game, &testSprts, &testHB);
         updateScene(render, &game) catch |err| std.debug.print("Update error: {any}\n", .{err});
         try drawUI(render, &game);
 
@@ -137,7 +152,7 @@ pub fn main() !void {
     }
 }
 
-fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts) void {
+fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *TestHB) void {
     const baseColor = utils.Color{
         .r = 0xaa,
         .g = 0xaa,
@@ -229,9 +244,66 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts) void {
     testSprts.testCustomSh2.animationState.nextSprite();
 
     const colorIdx = testSprts.testColors.animationState.currentSprite;
-    std.debug.print("Color: {any}\n", .{testSprts.testColors.sprites.items[colorIdx]});
+    // std.debug.print("Color: {any}\n", .{testSprts.testColors.sprites.items[colorIdx]});
     render.drawRectangle(400, 400, 512, 512, testSprts.testColors.sprites.items[colorIdx]);
     testSprts.testColors.animationState.nextSprite();
+
+    const h1Color = utils.Color{ .r = 0x10, .g = 0x10, .b = 0xff, .a = 0xff };
+    utils.Raylib.rlPushMatrix();
+    utils.Raylib.rlTranslatef(testHB.hb1.hitbox.x + testHB.hb1.hitbox.w / 2, testHB.hb1.hitbox.y + testHB.hb1.hitbox.h / 2, 0);
+    utils.Raylib.rlRotatef(testHB.hb1.angle, 0, 0, 1);
+    render.drawRectangleRect(utils.Rectangle{
+        .x = -testHB.hb1.hitbox.w / 2,
+        .y = -testHB.hb1.hitbox.h / 2,
+        .w = testHB.hb1.hitbox.w,
+        .h = testHB.hb1.hitbox.h,
+    }, h1Color);
+    utils.Raylib.rlPopMatrix();
+
+    const h2Color = utils.Color{ .r = 0xff, .g = 0x10, .b = 0x10, .a = 0xff };
+    utils.Raylib.rlPushMatrix();
+    utils.Raylib.rlTranslatef(testHB.hb2.hitbox.x + testHB.hb2.hitbox.w / 2, testHB.hb2.hitbox.y + testHB.hb2.hitbox.h / 2, 0);
+    utils.Raylib.rlRotatef(testHB.hb2.angle, 0, 0, 1);
+    render.drawRectangleRect(utils.Rectangle{
+        .x = -testHB.hb2.hitbox.w / 2,
+        .y = -testHB.hb2.hitbox.h / 2,
+        .w = testHB.hb2.hitbox.w,
+        .h = testHB.hb2.hitbox.h,
+    }, h2Color);
+    utils.Raylib.rlPopMatrix();
+
+    const colorPoint = utils.Color{ .r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff };
+    for (testHB.hb1.getLines()) |line| {
+        const p1 = utils.Point{
+            .x = line.points[0].x,
+            .y = line.function.calc(line.points[0].x),
+        };
+        const p2 = utils.Point{
+            .x = line.points[1].x,
+            .y = line.function.calc(line.points[1].x),
+        };
+        render.drawLineP(p1, p2, colorPoint);
+    }
+
+    for (testHB.hb2.getLines()) |line| {
+        const p1 = utils.Point{
+            .x = line.points[0].x,
+            .y = line.function.calc(line.points[0].x),
+        };
+        const p2 = utils.Point{
+            .x = line.points[1].x,
+            .y = line.function.calc(line.points[1].x),
+        };
+        render.drawLineP(p1, p2, colorPoint);
+    }
+
+    const r = testHB.hb1.getIntersections(testHB.hb2);
+    if (r) |colPoint| {
+        std.debug.print("Point: {d}, {d}\n", colPoint);
+        const x: c_int = @intFromFloat(colPoint.x);
+        const y: c_int = @intFromFloat(colPoint.y);
+        utils.Raylib.DrawCircle(x, y, 4, colorPoint.toRayColor());
+    }
 }
 
 fn updateScene(render: Render, game: *Game) !void {

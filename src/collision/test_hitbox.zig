@@ -49,3 +49,41 @@ test "It should collide by step" {
 
     try expect(hb2.stepCollision(&target2, speed2));
 }
+
+test "Collision with angles" {
+    var hb1 = HitBox.new(utils.Rectangle{
+        .x = 42,
+        .y = 42,
+        .w = 32,
+        .h = 32,
+    });
+    hb1.angle = 30;
+
+    var hb2 = HitBox.new(utils.Rectangle{
+        .x = 56,
+        .y = 42,
+        .w = 32,
+        .h = 32,
+    });
+    hb2.angle = 45;
+
+    const lines1 = hb1.getLines();
+    std.debug.print("Lines1\n", .{});
+    for (lines1, 0..) |line, idx| {
+        std.debug.print("\tIndex: {d}\n", .{idx});
+        std.debug.print("\t\tFunction: {any}\n", .{line.function});
+        std.debug.print("\t\tPoint: {any}\n", .{line.points});
+    }
+    const lines2 = hb2.getLines();
+    std.debug.print("Lines2\n", .{});
+    for (lines2, 0..) |line, idx| {
+        std.debug.print("\tIndex: {d}\n", .{idx});
+        std.debug.print("\t\tFunction: {any}\n", .{line.function});
+        std.debug.print("\t\tPoint: {any}\n", .{line.points});
+    }
+
+    const res = hb1.getIntersections(hb2);
+    if (res) |x| {
+        std.debug.print("Point: {any}", .{x});
+    }
+}
