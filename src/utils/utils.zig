@@ -3,6 +3,7 @@ const Pi = @import("std").math.pi;
 pub const Raylib = @cImport({
     @cInclude("raylib.h");
     @cInclude("raymath.h");
+    @cInclude("rlgl.h");
 });
 
 pub const Color = struct {
@@ -52,6 +53,7 @@ pub const Point = struct {
 };
 
 pub const Rectangle = struct {
+    const This = @This();
     x: f32,
     y: f32,
     w: f32,
