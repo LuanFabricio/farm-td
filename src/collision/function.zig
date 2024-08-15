@@ -37,6 +37,7 @@ pub const Function = struct {
     }
 
     pub fn calc(self: *const This, x: f32) f32 {
+        // TODO(luan): Handle mainAxis = Y
         return self.a * x + self.b;
     }
 
