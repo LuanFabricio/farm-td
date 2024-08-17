@@ -145,7 +145,7 @@ pub fn main() !void {
     while (render.shouldRender()) {
         // TODO: Remove testSpr
         drawScene(render, &game, &testSprts, &testHB);
-        updateScene(render, &game) catch |err| std.debug.print("Update error: {any}\n", .{err});
+        updateScene(render, &game, &testHB) catch |err| std.debug.print("Update error: {any}\n", .{err});
         try drawUI(render, &game);
 
         game.farmGold();
@@ -287,12 +287,25 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
 
     for (testHB.hb2.getLines()) |line| {
         const p1 = utils.Point{
-            .x = line.points[0].x,
-            .y = line.function.calc(line.points[0].x),
+            .x = switch (line.function.mainAxis) {
+                .X => line.points[0].x,
+                .Y => line.function.calc(line.points[0].y),
+            },
+            .y = switch (line.function.mainAxis) {
+                .X => line.function.calc(line.points[0].x),
+                .Y => line.points[0].y,
+            },
         };
+
         const p2 = utils.Point{
-            .x = line.points[1].x,
-            .y = line.function.calc(line.points[1].x),
+            .x = switch (line.function.mainAxis) {
+                .X => line.points[1].x,
+                .Y => line.function.calc(line.points[1].y),
+            },
+            .y = switch (line.function.mainAxis) {
+                .X => line.function.calc(line.points[1].x),
+                .Y => line.points[1].y,
+            },
         };
         render.drawLineP(p1, p2, colorPoint);
     }
@@ -306,7 +319,12 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
     }
 }
 
-fn updateScene(render: Render, game: *Game) !void {
+fn updateScene(render: Render, game: *Game, testHB: *TestHB) !void {
+    if (Input.isKeyDown(input.KeyEnum.Up)) testHB.hb1.hitbox.y -= 10;
+    if (Input.isKeyDown(input.KeyEnum.Down)) testHB.hb1.hitbox.y += 10;
+    if (Input.isKeyDown(input.KeyEnum.Left)) testHB.hb1.hitbox.x -= 10;
+    if (Input.isKeyDown(input.KeyEnum.Right)) testHB.hb1.hitbox.x += 10;
+
     if (Input.isMouseBntPressed(input.MouseBntEnum.Left)) {
         const mousePoint = Input.getMousePoint();
         // std.debug.print("Mouse point: {any}\n", .{mousePoint});
