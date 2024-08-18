@@ -59,14 +59,28 @@ pub const Rectangle = struct {
     w: f32,
     h: f32,
 
-    pub fn copy(self: *Rectangle, other: Rectangle) void {
+    pub fn fromPoints(p1: Point, p2: Point) This {
+        const x1 = @min(p1.x, p2.x);
+        const x2 = @max(p1.x, p2.x);
+        const y1 = @min(p1.y, p2.y);
+        const y2 = @max(p1.y, p2.y);
+
+        return This{
+            .x = x1,
+            .y = y1,
+            .w = x2 - x1,
+            .h = y2 - y1,
+        };
+    }
+
+    pub fn copy(self: *This, other: This) void {
         self.x = other.x;
         self.y = other.y;
         self.w = other.w;
         self.h = other.h;
     }
 
-    pub fn toRayRect(self: *const Rectangle) Raylib.Rectangle {
+    pub fn toRayRect(self: *const This) Raylib.Rectangle {
         return .{
             .x = self.x,
             .y = self.y,
@@ -75,8 +89,8 @@ pub const Rectangle = struct {
         };
     }
 
-    pub fn clone(self: *const Rectangle) Rectangle {
-        return Rectangle{
+    pub fn clone(self: *const This) This {
+        return This{
             .x = self.x,
             .y = self.y,
             .w = self.w,
@@ -84,7 +98,23 @@ pub const Rectangle = struct {
         };
     }
 
-    pub fn getCenter(self: *const Rectangle) Point {
+    pub fn containsPoint(self: *const This, point: Point) bool {
+        const matchX = point.x >= self.x and point.x <= self.x + self.w;
+        const matchY = point.y >= self.y and point.y <= self.y + self.h;
+
+        @import("std").debug.print("Point:  {d} {d}\n", .{ point.x, point.y });
+        @import("std").debug.print("Self: {d} {d} {d} {d}\n", .{
+            self.x,
+            self.y,
+            self.w,
+            self.h,
+        });
+        @import("std").debug.print("MatchX: {any}\n", .{matchX});
+        @import("std").debug.print("MatchY: {any}\n", .{matchY});
+        return matchX and matchY;
+    }
+
+    pub fn getCenter(self: *const This) Point {
         const cx = self.x + self.w / 2;
         const cy = self.y + self.h / 2;
 
@@ -94,7 +124,7 @@ pub const Rectangle = struct {
         };
     }
 
-    pub fn getPoints(self: *const Rectangle) [4]Point {
+    pub fn getPoints(self: *const This) [4]Point {
         const lt = Point{ .x = self.x, .y = self.y };
         const rt = Point{ .x = self.x + self.w, .y = self.y };
         const lb = Point{ .x = self.x, .y = self.y + self.h };
