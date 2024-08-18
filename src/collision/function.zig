@@ -37,7 +37,6 @@ pub const Function = struct {
     }
 
     pub fn calc(self: *const This, x: f32) f32 {
-        // TODO(luan): Handle mainAxis = Y
         return self.a * x + self.b;
     }
 
@@ -48,6 +47,18 @@ pub const Function = struct {
 
     pub fn collidePoint(self: *const This, other: This) !utils.Point {
         if (!self.canCollide(other)) return error.CannotCollide;
+
+        if (self.mainAxis == This.Axis.Y) {
+            return utils.Point{
+                .x = self.b,
+                .y = other.calc(self.b),
+            };
+        } else if (other.mainAxis == This.Axis.Y) {
+            return utils.Point{
+                .x = other.b,
+                .y = self.calc(other.b),
+            };
+        }
 
         const x = (other.b - self.b) / (self.a - other.a);
         const y = self.a * x + self.b;
