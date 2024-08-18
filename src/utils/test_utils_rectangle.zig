@@ -76,3 +76,21 @@ test "It should get the rectangle points" {
     try expect(points[3].x == expectedPoints[3].x);
     try expect(points[3].y == expectedPoints[3].y);
 }
+
+test "It should be created by two points" {
+    const p1 = utils.Point{
+        .x = 0,
+        .y = 0,
+    };
+    const p2 = utils.Point{
+        .x = 10,
+        .y = 10,
+    };
+
+    const r = Rectangle.fromPoints(p1, p2);
+
+    try expect(r.x == 0);
+    try expect(r.y == 0);
+    try expect(r.w == 10);
+    try expect(r.h == 10);
+}
