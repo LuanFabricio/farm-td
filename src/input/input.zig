@@ -7,6 +7,8 @@ pub const KeyEnum = enum(i32) {
     Down,
     Left,
     Right,
+    Rotate,
+    Equal,
 };
 
 pub const MouseBntEnum = enum(i32) {
@@ -32,6 +34,8 @@ pub const Input = struct {
             .Down => Raylib.KEY_S,
             .Left => Raylib.KEY_A,
             .Right => Raylib.KEY_D,
+            .Equal => Raylib.KEY_EQUAL,
+            .Rotate => Raylib.KEY_R,
         };
 
         return raylibKeyCode;
