@@ -275,12 +275,25 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
     const colorPoint = utils.Color{ .r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff };
     for (testHB.hb1.getLines()) |line| {
         const p1 = utils.Point{
-            .x = line.points[0].x,
-            .y = line.function.calc(line.points[0].x),
+            .x = switch (line.function.mainAxis) {
+                .X => line.points[0].x,
+                .Y => line.function.calc(line.points[0].y),
+            },
+            .y = switch (line.function.mainAxis) {
+                .X => line.function.calc(line.points[0].x),
+                .Y => line.points[0].y,
+            },
         };
+
         const p2 = utils.Point{
-            .x = line.points[1].x,
-            .y = line.function.calc(line.points[1].x),
+            .x = switch (line.function.mainAxis) {
+                .X => line.points[1].x,
+                .Y => line.function.calc(line.points[1].y),
+            },
+            .y = switch (line.function.mainAxis) {
+                .X => line.function.calc(line.points[1].x),
+                .Y => line.points[1].y,
+            },
         };
         render.drawLineP(p1, p2, colorPoint);
     }
@@ -324,6 +337,8 @@ fn updateScene(render: Render, game: *Game, testHB: *TestHB) !void {
     if (Input.isKeyDown(input.KeyEnum.Down)) testHB.hb1.hitbox.y += 10;
     if (Input.isKeyDown(input.KeyEnum.Left)) testHB.hb1.hitbox.x -= 10;
     if (Input.isKeyDown(input.KeyEnum.Right)) testHB.hb1.hitbox.x += 10;
+    if (Input.isKeyDown(input.KeyEnum.Rotate)) testHB.hb1.angle += 10;
+    if (Input.isKeyDown(input.KeyEnum.Equal)) testHB.hb1.angle = 0;
 
     if (Input.isMouseBntPressed(input.MouseBntEnum.Left)) {
         const mousePoint = Input.getMousePoint();
