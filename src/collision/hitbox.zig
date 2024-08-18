@@ -101,18 +101,41 @@ pub const HitBox = struct {
 
         for (0..selfLines.len) |selfIdx| {
             const selfLine = selfLines[selfIdx];
-            // const selfPoints = selfLine.points;
+            const maxSelfLineX = @max(selfLine.points[0].x, selfLine.points[1].x);
+            const minSelfLineX = @min(selfLine.points[0].x, selfLine.points[1].x);
+            const maxSelfLineY = @max(selfLine.points[0].y, selfLine.points[1].y);
+            const minSelfLineY = @min(selfLine.points[0].y, selfLine.points[1].y);
+
             for (0..otherLines.len) |otherIdx| {
                 const otherLine = otherLines[otherIdx];
-                const point = selfLine.function.collidePoint(otherLine.function) catch continue;
+                const maxOtherLineX = @max(otherLine.points[0].x, otherLine.points[1].x);
+                const minOtherLineX = @min(otherLine.points[0].x, otherLine.points[1].x);
+                const maxOtherLineY = @max(otherLine.points[0].y, otherLine.points[1].y);
+                const minOtherLineY = @min(otherLine.points[0].y, otherLine.points[1].y);
 
-                // const onSelfPoint = point.x >= selfPoints[0].x and point.x <= selfPoints[1].x;
-                // const otherPoints = otherLine.points;
-                // const onOtherPoint = point.x >= otherPoints[0].x and point.x <= otherPoints[1].x;
-                //if (onSelfPoint and onOtherPoint) {
-                std.debug.print("Point at {d} x {d}\n", .{ selfIdx, otherIdx });
-                return point;
-                //}
+                std.debug.print("[0]Line: {d} {d}\n", selfLine.points[0]);
+                std.debug.print("[1]Line: {d} {d}\n", selfLine.points[1]);
+                std.debug.print("[0]Other: {d} {d}\n", otherLine.points[0]);
+                std.debug.print("[1]Other: {d} {d}\n", otherLine.points[1]);
+
+                const point = selfLine.function.collidePoint(otherLine.function) catch continue;
+                std.debug.print("[{d} x {d}][Before check]Point: {d} {d}\n", .{
+                    selfIdx,
+                    otherIdx,
+                    point.x,
+                    point.y,
+                });
+
+                const selfCollideX = minSelfLineX <= point.x and point.x <= maxSelfLineX;
+                const selfCollideY = minSelfLineY <= point.y and point.y <= maxSelfLineY;
+
+                const otherCollideX = minOtherLineX <= point.x and point.x <= maxOtherLineX;
+                const otherCollideY = minOtherLineY <= point.y and point.y <= maxOtherLineY;
+
+                if (selfCollideX and selfCollideY and otherCollideX and otherCollideY) {
+                    std.debug.print("Point at {d} x {d}\n", .{ selfIdx, otherIdx });
+                    return point;
+                }
             }
         }
 
