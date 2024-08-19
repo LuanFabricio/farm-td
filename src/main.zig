@@ -325,7 +325,7 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
 
     const r = testHB.hb1.getIntersections(testHB.hb2);
     if (r) |colPoint| {
-        std.debug.print("Point: {d}, {d}\n", colPoint);
+        // std.debug.print("Point: {d}, {d}\n", colPoint);
         const x: c_int = @intFromFloat(colPoint.x);
         const y: c_int = @intFromFloat(colPoint.y);
         utils.Raylib.DrawCircle(x, y, 4, colorPoint.toRayColor());

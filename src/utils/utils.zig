@@ -102,15 +102,6 @@ pub const Rectangle = struct {
         const matchX = point.x >= self.x and point.x <= self.x + self.w;
         const matchY = point.y >= self.y and point.y <= self.y + self.h;
 
-        @import("std").debug.print("Point:  {d} {d}\n", .{ point.x, point.y });
-        @import("std").debug.print("Self: {d} {d} {d} {d}\n", .{
-            self.x,
-            self.y,
-            self.w,
-            self.h,
-        });
-        @import("std").debug.print("MatchX: {any}\n", .{matchX});
-        @import("std").debug.print("MatchY: {any}\n", .{matchY});
         return matchX and matchY;
     }
 

@@ -113,18 +113,7 @@ pub const HitBox = struct {
                 const maxOtherLineY = @max(otherLine.points[0].y, otherLine.points[1].y);
                 const minOtherLineY = @min(otherLine.points[0].y, otherLine.points[1].y);
 
-                std.debug.print("[0]Line: {d} {d}\n", selfLine.points[0]);
-                std.debug.print("[1]Line: {d} {d}\n", selfLine.points[1]);
-                std.debug.print("[0]Other: {d} {d}\n", otherLine.points[0]);
-                std.debug.print("[1]Other: {d} {d}\n", otherLine.points[1]);
-
                 const point = selfLine.function.collidePoint(otherLine.function) catch continue;
-                std.debug.print("[{d} x {d}][Before check]Point: {d} {d}\n", .{
-                    selfIdx,
-                    otherIdx,
-                    point.x,
-                    point.y,
-                });
 
                 const selfCollideX = minSelfLineX <= point.x and point.x <= maxSelfLineX;
                 const selfCollideY = minSelfLineY <= point.y and point.y <= maxSelfLineY;
@@ -133,7 +122,6 @@ pub const HitBox = struct {
                 const otherCollideY = minOtherLineY <= point.y and point.y <= maxOtherLineY;
 
                 if (selfCollideX and selfCollideY and otherCollideX and otherCollideY) {
-                    std.debug.print("Point at {d} x {d}\n", .{ selfIdx, otherIdx });
                     return point;
                 }
             }
