@@ -73,8 +73,8 @@ test "It should get the point of collision" {
     const func22 = Function{ .a = 0.0, .b = -3.0, .mainAxis = Function.Axis.Y };
 
     const collisionPoint2 = func21.collidePoint(func22) catch unreachable;
-    try expect(collisionPoint2.x == -4.0);
-    try expect(collisionPoint2.y == -3.0);
+    try expect(collisionPoint2.x == -3.0);
+    try expect(collisionPoint2.y == -2.0);
 
     const func31 = Function{ .a = 1.0, .b = 1.0, .mainAxis = Function.Axis.X };
     const func32 = Function{ .a = 1.0, .b = -3.0, .mainAxis = Function.Axis.X };
