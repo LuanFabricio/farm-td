@@ -249,28 +249,10 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
     testSprts.testColors.animationState.nextSprite();
 
     const h1Color = utils.Color{ .r = 0x10, .g = 0x10, .b = 0xff, .a = 0xff };
-    utils.Raylib.rlPushMatrix();
-    utils.Raylib.rlTranslatef(testHB.hb1.hitbox.x + testHB.hb1.hitbox.w / 2, testHB.hb1.hitbox.y + testHB.hb1.hitbox.h / 2, 0);
-    utils.Raylib.rlRotatef(testHB.hb1.angle, 0, 0, 1);
-    render.drawRectangleRect(utils.Rectangle{
-        .x = -testHB.hb1.hitbox.w / 2,
-        .y = -testHB.hb1.hitbox.h / 2,
-        .w = testHB.hb1.hitbox.w,
-        .h = testHB.hb1.hitbox.h,
-    }, h1Color);
-    utils.Raylib.rlPopMatrix();
+    render.drawRectangleRectRotated(testHB.hb1.hitbox, h1Color, testHB.hb1.angle);
 
     const h2Color = utils.Color{ .r = 0xff, .g = 0x10, .b = 0x10, .a = 0xff };
-    utils.Raylib.rlPushMatrix();
-    utils.Raylib.rlTranslatef(testHB.hb2.hitbox.x + testHB.hb2.hitbox.w / 2, testHB.hb2.hitbox.y + testHB.hb2.hitbox.h / 2, 0);
-    utils.Raylib.rlRotatef(testHB.hb2.angle, 0, 0, 1);
-    render.drawRectangleRect(utils.Rectangle{
-        .x = -testHB.hb2.hitbox.w / 2,
-        .y = -testHB.hb2.hitbox.h / 2,
-        .w = testHB.hb2.hitbox.w,
-        .h = testHB.hb2.hitbox.h,
-    }, h2Color);
-    utils.Raylib.rlPopMatrix();
+    render.drawRectangleRectRotated(testHB.hb2.hitbox, h2Color, testHB.hb2.angle);
 
     const colorPoint = utils.Color{ .r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff };
     for (testHB.hb1.getLines()) |line| {
@@ -337,8 +319,10 @@ fn updateScene(render: Render, game: *Game, testHB: *TestHB) !void {
     if (Input.isKeyDown(input.KeyEnum.Down)) testHB.hb1.hitbox.y += 10;
     if (Input.isKeyDown(input.KeyEnum.Left)) testHB.hb1.hitbox.x -= 10;
     if (Input.isKeyDown(input.KeyEnum.Right)) testHB.hb1.hitbox.x += 10;
-    if (Input.isKeyDown(input.KeyEnum.Rotate)) testHB.hb1.angle += 10;
-    if (Input.isKeyDown(input.KeyEnum.Equal)) testHB.hb1.angle = 0;
+    if (Input.isKeyDown(input.KeyEnum.Rotate1)) testHB.hb1.angle += 10;
+    if (Input.isKeyDown(input.KeyEnum.Equal1)) testHB.hb1.angle = 0;
+    if (Input.isKeyDown(input.KeyEnum.Rotate2)) testHB.hb2.angle += 10;
+    if (Input.isKeyDown(input.KeyEnum.Equal2)) testHB.hb2.angle = 0;
 
     if (Input.isMouseBntPressed(input.MouseBntEnum.Left)) {
         const mousePoint = Input.getMousePoint();
