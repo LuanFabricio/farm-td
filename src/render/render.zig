@@ -52,6 +52,19 @@ pub const Render = struct {
         Raylib.DrawRectangleRec(rectangle.toRayRect(), rayColor);
     }
 
+    pub fn drawRectangleRectRotated(self: *const Render, rectangle: Rectangle, color: Color, angle: f32) void {
+        utils.Raylib.rlPushMatrix();
+        utils.Raylib.rlTranslatef(rectangle.x + rectangle.w / 2, rectangle.y + rectangle.h / 2, 0);
+        utils.Raylib.rlRotatef(angle, 0, 0, 1);
+        self.drawRectangleRect(utils.Rectangle{
+            .x = -rectangle.w / 2,
+            .y = -rectangle.h / 2,
+            .w = rectangle.w,
+            .h = rectangle.h,
+        }, color);
+        utils.Raylib.rlPopMatrix();
+    }
+
     pub fn drawLineP(_: *const Render, p1: Point, p2: Point, color: Color) void {
         const rayColor = color.toRayColor();
         const p1RayVec2 = p1.toRayVec2();
