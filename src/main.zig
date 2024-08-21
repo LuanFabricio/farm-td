@@ -359,6 +359,7 @@ fn updateScene(render: Render, game: *Game, testHB: *TestHB) !void {
     try game.spawnEnemies();
 
     const frameTime = render.getFrameTime();
+    testHB.hb2.angle = @as(f32, @floatCast(@mod(render.getTime() * 100, 360)));
     // std.debug.print("Moving {d} enemys\n", .{game.enemies.items.len});
     for (game.enemies.items) |currentEnemy| {
         currentEnemy.move(frameTime);
