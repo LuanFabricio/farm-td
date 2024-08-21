@@ -104,6 +104,10 @@ pub const Render = struct {
     pub fn getFrameTime(_: *const Render) f32 {
         return Raylib.GetFrameTime();
     }
+
+    pub fn getTime(_: *const Render) f64 {
+        return Raylib.GetTime();
+    }
 };
 // TODO(luan): Creste a texture render
 // TODO(luan): Creste an animation module
