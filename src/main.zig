@@ -91,9 +91,6 @@ pub fn main() !void {
         try game.addEnemySpawn(enemy.EnemySpawner.new(30, spawnerBox));
     }
 
-    const stdout = std.io.getStdOut().writer();
-    try stdout.writeAll("Hello world!\n");
-
     var render = Render.init(SCREEN_WIDTH, SCREEN_HEIGHT);
     defer render.deinit();
 
@@ -245,7 +242,13 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
 
     const colorIdx = testSprts.testColors.animationState.currentSprite;
     // std.debug.print("Color: {any}\n", .{testSprts.testColors.sprites.items[colorIdx]});
-    render.drawRectangle(400, 400, 512, 512, testSprts.testColors.sprites.items[colorIdx]);
+    render.drawRectangle(
+        @as(i32, @intCast(render.screenWidth - 64)),
+        @as(i32, @intCast(render.screenHeight - 64)),
+        32,
+        32,
+        testSprts.testColors.sprites.items[colorIdx],
+    );
     testSprts.testColors.animationState.nextSprite();
 
     const h1Color = utils.Color{ .r = 0x10, .g = 0x10, .b = 0xff, .a = 0xff };
