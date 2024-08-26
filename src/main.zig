@@ -219,18 +219,6 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
         .b = 0xff,
         .a = 0xff,
     };
-    // utils.Raylib.DrawTexture(testSprts.testSprite.content, 400, 400, texColor.toRayColor());
-    // utils.Raylib.DrawTexture(testSprts.testAnimation1.sprites.items[testSprts.testAnimation1.currentSprite].content, 500, 500, texColor.toRayColor());
-    // testSprts.testAnimation1.nextSprite();
-
-    // utils.Raylib.DrawTexture(testSprts.testAnimation2.sprites.items[testSprts.testAnimation2.currentSprite].content, 536, 500, texColor.toRayColor());
-    // testSprts.testAnimation2.nextSprite();
-
-    // testSprts.testSpritesheetAnimation1.draw(&render, utils.Point{ .x = 136, .y = 100 });
-    // testSprts.testSpritesheetAnimation1.nextSprite();
-
-    // testSprts.testSpritesheetAnimation2.draw(&render, utils.Point{ .x = 172, .y = 100 });
-    // testSprts.testSpritesheetAnimation2.nextSprite();
 
     const row1 = testSprts.testCustomSh1.animationState.currentSprite / testSprts.testCustomSh1.sprites.gridRows;
     const col1 = testSprts.testCustomSh1.animationState.currentSprite / testSprts.testCustomSh1.sprites.gridCols;
