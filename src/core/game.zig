@@ -19,6 +19,10 @@ const Grid = gridImport.Grid;
 const farmImport = @import("farm.zig");
 const Farm = farmImport.Farm;
 
+const Projectile = @import("projectile.zig").Projectile;
+
+const HitBox = @import("../collision/hitbox.zig").HitBox;
+
 pub const TurretGrid = Grid(Turret);
 pub const FarmGrid = Grid(Farm);
 
@@ -27,6 +31,7 @@ pub const Game = struct {
 
     enemies: ArrayList(*Enemy),
     enemySpawners: ArrayList(EnemySpawner),
+    projectiles: ArrayList(Projectile),
     turretGrid: TurretGrid,
     turretBuyGrid: TurretGrid,
     farmGrid: FarmGrid,
@@ -47,6 +52,7 @@ pub const Game = struct {
         return This{
             .enemies = ArrayList(*Enemy).init(Allocator),
             .enemySpawners = ArrayList(EnemySpawner).init(Allocator),
+            .projectiles = ArrayList(Projectile).init(Allocator),
             .turretGrid = try TurretGrid.init(widthTurret, heightTurret),
             .turretBuyGrid = try TurretGrid.init(widthBuy, heightBuy),
             .farmGrid = try FarmGrid.init(widthFarm, heightFarm),
@@ -65,6 +71,7 @@ pub const Game = struct {
         self.enemySpawners.deinit();
         self.farmGrid.deinit();
         self.turretGrid.deinit();
+        self.projectiles.deinit();
 
         if (self.cursorFarm) |cursorFarm| {
             Allocator.destroy(cursorFarm);
@@ -144,6 +151,16 @@ pub const Game = struct {
                     // TODO: Maybe move to nearest enemy approach
                     if (turret.shouldAttack(turretPosition, enemyCenter)) {
                         turret.attackEntity(&enemy.entity);
+
+                        const turretRect = utils.Rectangle{
+                            .x = turretPosition.x,
+                            .y = turretPosition.y,
+                            .w = turretImport.TURRET_SIZE.x,
+                            .h = turretImport.TURRET_SIZE.y,
+                        };
+                        const projectile = turret.shoot(turretRect, enemy);
+                        try self.projectiles.append(projectile);
+
                         turret.resetDelay();
                         break;
                     }
@@ -161,9 +178,25 @@ pub const Game = struct {
             if (enemyHp <= 0 or enemyLeft > maxWidth) {
                 const enemyPtr = self.enemies.swapRemove(i);
 
+                self.cleanOrphansProjectiles(enemyPtr);
                 Allocator.destroy(enemyPtr);
                 if (i > 0) i -= 1;
             }
+        }
+    }
+
+    // TODO: Review this approach, maybe use some kind of HashMap
+    // to get Projectiles by an Enemy pointer
+    // or get an Enemy pointer by a Projectile
+    fn cleanOrphansProjectiles(self: *This, enemyPtr: *Enemy) void {
+        var i: usize = 0;
+        while (i < self.projectiles.items.len) {
+            if (self.projectiles.items[i].target == enemyPtr) {
+                _ = self.projectiles.swapRemove(i);
+                continue;
+            }
+
+            i += 1;
         }
     }
 
@@ -186,6 +219,33 @@ pub const Game = struct {
                 }
             }
         }
+    }
+
+    pub fn projectileRun(self: *This, frametime: f32) void {
+        var i: usize = 0;
+        while (i < self.projectiles.items.len) {
+            var projectile = &self.projectiles.items[i];
+            if (projectile.shouldDestroy(self.enemies.items)) {
+                projectile.applyDamage();
+                _ = self.projectiles.swapRemove(i);
+                continue;
+            }
+
+            projectile.updateAngle();
+            projectile.move(frametime);
+            i += 1;
+        }
+    }
+
+    fn projectileCollide(self: *This, projectile: *const Projectile, frametime: f32) bool {
+        const projHitbox = projectile.hitbox;
+        const projVecSpeed = utils.Point{ .x = projectile.speed * frametime, .y = 0 };
+        for (self.enemies.items) |enemy| {
+            const enemyCollisionBox = HitBox.new(enemy.box);
+            if (projHitbox.stepCollision(&enemyCollisionBox, projVecSpeed)) return true;
+        }
+
+        return false;
     }
 
     pub fn cleanDeadTurrets(self: *This) void {
