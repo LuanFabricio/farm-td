@@ -15,7 +15,7 @@ const gridImport = @import("grid.zig");
 const Grid = gridImport.Grid;
 const GridItemEnum = gridImport.GridItemEnum;
 
-const DEFAULT_SPEED: f32 = 10;
+const DEFAULT_SPEED: f32 = 55;
 
 pub const DEFAULT_COLOR = utils.Color{
     .r = 0x19,
