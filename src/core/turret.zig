@@ -4,7 +4,10 @@ const Allocator = std.heap.page_allocator;
 const timestamp = std.time.timestamp;
 
 const utils = @import("../utils/utils.zig");
+const HitBox = @import("../collision/hitbox.zig").HitBox;
 
+const Projectile = @import("projectile.zig").Projectile;
+const Enemy = @import("enemy.zig").Enemy;
 const Entity = @import("entity.zig").Entity;
 
 pub const TURRET_SIZE = utils.Point{
@@ -69,6 +72,15 @@ pub const Turret = struct {
 
     pub fn attackEntity(self: *const This, otherEntity: *Entity) void {
         otherEntity.status.health -= self.entity.status.attack;
+    }
+
+    pub fn shoot(self: *const This, rect: utils.Rectangle, target: *Enemy) Projectile {
+        return Projectile.new(
+            HitBox.new(rect),
+            target,
+            self.entity.status.attack,
+            -35.0,
+        );
     }
 
     pub fn resetDelay(self: *This) void {
