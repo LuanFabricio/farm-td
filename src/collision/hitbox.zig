@@ -60,6 +60,7 @@ pub const HitBox = struct {
     }
 
     pub fn canCollide(self: *const This, target: *const This, speed: utils.Point) bool {
+        // TODO: Rotate points if needed
         const dx = target.hitbox.x - self.hitbox.x;
         const dy = target.hitbox.y - self.hitbox.y;
 
