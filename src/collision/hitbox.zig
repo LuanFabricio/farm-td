@@ -48,12 +48,15 @@ pub const HitBox = struct {
     }
 
     pub fn checkCollision(self: *const This, target: *const This) bool {
-        const rightLeft = self.hitbox.x + self.hitbox.w >= target.hitbox.x;
-        const leftRight = self.hitbox.x <= target.hitbox.x + target.hitbox.x;
-        const bottomUp = self.hitbox.y + self.hitbox.h >= target.hitbox.y;
-        const upBottom = self.hitbox.y <= target.hitbox.y + target.hitbox.h;
+        if (self.getIntersections(target.*) != null) return true;
+        return false;
 
-        return rightLeft and leftRight and bottomUp and upBottom;
+        // const rightLeft = self.hitbox.x + self.hitbox.w >= target.hitbox.x;
+        // const leftRight = self.hitbox.x <= target.hitbox.x + target.hitbox.x;
+        // const bottomUp = self.hitbox.y + self.hitbox.h >= target.hitbox.y;
+        // const upBottom = self.hitbox.y <= target.hitbox.y + target.hitbox.h;
+
+        // return rightLeft and leftRight and bottomUp and upBottom;
     }
 
     pub fn canCollide(self: *const This, target: *const This, speed: utils.Point) bool {
