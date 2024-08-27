@@ -61,6 +61,8 @@ const TestHB = struct {
     hb2: HitBox,
 };
 
+const Projectile = @import("./core/projectile.zig").Projectile;
+
 pub fn main() !void {
     var game = try Game.init(300, 7, 5, 2, 4, 1, 2);
     defer game.deinit();
@@ -303,6 +305,11 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
         const y: c_int = @intFromFloat(colPoint.y);
         utils.Raylib.DrawCircle(x, y, 4, colorPoint.toRayColor());
     }
+
+    const projColor = utils.Color{ .r = 0xfa, .g = 0xfa, .b = 0xfa, .a = 0xff };
+    for (game.projectiles.items) |proj| {
+        render.drawRectangleRectRotated(proj.hitbox.hitbox, projColor, proj.hitbox.angle);
+    }
 }
 
 fn updateScene(render: Render, game: *Game, testHB: *TestHB) !void {
@@ -362,6 +369,8 @@ fn updateScene(render: Render, game: *Game, testHB: *TestHB) !void {
 
     try game.enemyAttack(turretGridOffset, gridSize);
     game.cleanDeadTurrets();
+
+    game.projectileRun(frameTime);
 }
 
 fn drawUI(render: Render, game: *const Game) !void {
