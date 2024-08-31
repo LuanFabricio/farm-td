@@ -48,6 +48,19 @@ test "It should collide by step" {
     const speed2 = utils.Point{ .x = 5, .y = 5 };
 
     try expect(hb2.stepCollision(&target2, speed2));
+
+    var hb3 = HitBox.new(utils.Rectangle{ .x = 42, .y = 42, .w = 32, .h = 32 });
+    hb3.angle = 30;
+    var target3 = HitBox.new(utils.Rectangle{
+        .x = hb2.hitbox.x + hb2.hitbox.w + 100,
+        .y = hb2.hitbox.y + hb2.hitbox.h + 100,
+        .w = 32,
+        .h = 32,
+    });
+    target3.angle = 210;
+
+    const speed3 = utils.Point{ .x = 5, .y = 5 };
+    try expect(!hb3.stepCollision(&target3, speed3));
 }
 
 test "It should collide with rotation (angles)" {

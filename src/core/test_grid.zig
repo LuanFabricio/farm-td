@@ -42,6 +42,21 @@ test "It should add an item" {
     }
 }
 
+test "It should throw an error if try to get an item on a not avaliable grid" {
+    var g = try Grid(Turret).init(3, 3);
+    defer g.deinit();
+
+    const t = try Turret.init();
+
+    g.addItem(2, 2, t);
+
+    if (g.getItem(4, 4)) |_| {
+        try expect(false);
+    } else |_| {
+        try expect(true);
+    }
+}
+
 test "It should get an item" {
     var g = try Grid(Turret).init(32, 32);
     defer g.deinit();
