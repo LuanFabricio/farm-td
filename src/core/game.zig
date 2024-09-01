@@ -88,10 +88,13 @@ pub const Game = struct {
 
     pub fn addTurret(self: *This, x: usize, y: usize) !bool {
         if (self.cursorTurret) |cursorTurret| {
+            if (self.gold < cursorTurret.entity.cost) return false;
+
             const copyHeap = try Turret.init();
             copyHeap.copy(cursorTurret.*);
             self.turretGrid.addItem(x, y, copyHeap);
 
+            self.gold -= cursorTurret.entity.cost;
             self.cursorTurret = null;
             return true;
         }
