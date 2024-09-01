@@ -138,26 +138,26 @@ pub const Game = struct {
     }
 
     pub fn turretShoot(self: *This, offset: utils.Point, gridSize: f32) !void {
-        const turretOffset = utils.Point{
-            .x = turretImport.TURRET_SIZE.x / 2.0 + 15.0,
-            .y = turretImport.TURRET_SIZE.y / 2.0 + 15.0,
-        };
         for (self.turretGrid.items.items, 0..) |turretOption, idx| {
             if (turretOption) |turret| {
-                var turretPosition = self.turretGrid.indexToXY(idx);
-                turretPosition.x = turretPosition.x * gridSize + offset.x;
-                turretPosition.y = turretPosition.y * gridSize + offset.y;
+                const turretPosition = self.turretGrid.indexToXY(idx);
+                const turretRect = utils.Rectangle{
+                    .x = turretPosition.x * gridSize + offset.x,
+                    .y = turretPosition.y * gridSize + offset.y,
+                    .w = turretImport.TURRET_SIZE.x,
+                    .h = turretImport.TURRET_SIZE.y,
+                };
+                const turretCenter = turretRect.getCenter();
 
                 var nearestEnemy: ?*Enemy = null;
                 for (self.enemies.items) |enemy| {
                     if (enemy.entity.status.health <= 0) continue;
                     const enemyCenter = enemy.box.getCenter();
 
-                    // TODO: Maybe move to nearest enemy approach
-                    if (turret.shouldAttack(turretPosition, enemyCenter)) {
+                    if (turret.shouldAttack(turretCenter, enemyCenter)) {
                         if (nearestEnemy) |currentEnemy| {
-                            const currentDist = turretPosition.calcDist(&currentEnemy.box.getCenter());
-                            const otherDist = turretPosition.calcDist(&enemy.box.getCenter());
+                            const currentDist = turretCenter.calcDist(&currentEnemy.box.getCenter());
+                            const otherDist = turretCenter.calcDist(&enemy.box.getCenter());
 
                             if (currentDist > otherDist) {
                                 nearestEnemy = enemy;
@@ -168,13 +168,13 @@ pub const Game = struct {
                     }
                 }
                 if (nearestEnemy) |enemy| {
-                    const turretRect = utils.Rectangle{
-                        .x = turretPosition.x + turretOffset.x,
-                        .y = turretPosition.y + turretOffset.y,
+                    const projectileRect = utils.Rectangle{
+                        .x = turretCenter.x,
+                        .y = turretCenter.y,
                         .w = 8,
                         .h = 4,
                     };
-                    const projectile = turret.shoot(turretRect, enemy);
+                    const projectile = turret.shoot(projectileRect, enemy);
                     try self.projectiles.append(projectile);
 
                     turret.resetDelay();
