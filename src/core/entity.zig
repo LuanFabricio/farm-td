@@ -3,57 +3,46 @@ const utils = @import("../utils/utils.zig");
 const Status = @import("status.zig").Status;
 
 pub const Entity = struct {
+    const This = @This();
+    cost: u32,
     defaultStatus: Status,
     status: Status,
 
-    pub fn copy(self: *Entity, other: Entity) void {
+    pub fn copy(self: *This, other: This) void {
+        self.cost = other.cost;
         self.status.copy(other.status);
         self.defaultStatus.copy(other.defaultStatus);
     }
 
-    pub fn defaultTurret() Entity {
+    pub fn defaultTurret() This {
         const defaultStatus = Status{
             .health = 20,
             .attack = 4,
             .range = 350,
         };
 
-        return Entity{
+        return This{
+            .cost = 42,
             .status = defaultStatus,
             .defaultStatus = defaultStatus,
         };
     }
 
-    pub fn defaultEnemy() Entity {
+    pub fn defaultEnemy() This {
         const defaultStatus = Status{
             .health = 20,
             .attack = 5,
             .range = 10,
         };
 
-        return Entity{
+        return This{
+            .cost = 0,
             .status = defaultStatus,
             .defaultStatus = defaultStatus,
         };
     }
 
-    // pub fn getHealthRect(self: *const Entity) utils.Rectangle {
-    //     const center = self.box.getCenter();
-    //     var rect = utils.Rectangle{
-    //         .x = center.x,
-    //         .y = center.y,
-    //         .w = self.box.w,
-    //         .h = 10,
-    //     };
-    //     const yPadding = rect.h / 2 - 15;
-
-    //     rect.x = center.x - rect.w / 2;
-    //     rect.y -= yPadding;
-
-    //     return rect;
-    // }
-
-    pub fn healthPercentage(self: *const Entity) f32 {
+    pub fn healthPercentage(self: *const This) f32 {
         const currentHP: f32 = @floatFromInt(self.status.health);
         const defaultHP: f32 = @floatFromInt(self.defaultStatus.health);
         const percentage: f32 = currentHP / defaultHP;

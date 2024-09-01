@@ -8,12 +8,14 @@ const entityImport = @import("entity.zig");
 const Entity = entityImport.Entity;
 
 fn checkEntities(e1: Entity, e2: Entity) !void {
+    try expect(e1.cost == e2.cost);
     try expect(e1.status.isEqual(e2.status));
     try expect(e1.defaultStatus.isEqual(e2.defaultStatus));
 }
 
 test "Should copy an entity" {
     const originalEntity = Entity{
+        .cost = 42,
         .status = Status{
             .health = 42,
             .attack = 2,
@@ -33,7 +35,7 @@ test "Should copy an entity" {
 }
 
 test "Should return health percentage" {
-    const halfedEntity = Entity{ .status = Status{
+    const halfedEntity = Entity{ .cost = 5, .status = Status{
         .health = 5,
         .attack = 4,
         .range = 2,

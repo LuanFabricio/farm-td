@@ -70,6 +70,7 @@ test "Should attack another entity" {
     defer enemy.deinit();
 
     var entity = Entity{
+        .cost = 0,
         .status = .{
             .range = 0,
             .attack = 0,
