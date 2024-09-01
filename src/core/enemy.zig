@@ -58,16 +58,9 @@ pub const Enemy = struct {
         try self.turrets.append(observer);
     }
 
-    pub fn notifyAll(self: *This) void {
-        for (self.turrets.items) |turret| {
-            turret.observer(&self.entity);
-        }
-    }
-
     pub fn move(self: *This, frameTime: f32) void {
         if (self.entity.status.health > 0) {
             self.box.x += DEFAULT_SPEED * frameTime;
-            self.notifyAll();
         }
     }
 
