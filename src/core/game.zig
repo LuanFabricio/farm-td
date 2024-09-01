@@ -138,6 +138,10 @@ pub const Game = struct {
     }
 
     pub fn turretShoot(self: *This, offset: utils.Point, gridSize: f32) !void {
+        const turretOffset = utils.Point{
+            .x = turretImport.TURRET_SIZE.x / 2.0 + 15.0,
+            .y = turretImport.TURRET_SIZE.y / 2.0 + 15.0,
+        };
         for (self.turretGrid.items.items, 0..) |turretOption, idx| {
             if (turretOption) |turret| {
                 var turretPosition = self.turretGrid.indexToXY(idx);
@@ -150,13 +154,11 @@ pub const Game = struct {
 
                     // TODO: Maybe move to nearest enemy approach
                     if (turret.shouldAttack(turretPosition, enemyCenter)) {
-                        turret.attackEntity(&enemy.entity);
-
                         const turretRect = utils.Rectangle{
-                            .x = turretPosition.x,
-                            .y = turretPosition.y,
-                            .w = turretImport.TURRET_SIZE.x,
-                            .h = turretImport.TURRET_SIZE.y,
+                            .x = turretPosition.x + turretOffset.x,
+                            .y = turretPosition.y + turretOffset.y,
+                            .w = 8,
+                            .h = 4,
                         };
                         const projectile = turret.shoot(turretRect, enemy);
                         try self.projectiles.append(projectile);
