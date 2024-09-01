@@ -1,7 +1,7 @@
 const std = @import("std");
 const expect = std.testing.expect;
 
-const timestamp = std.time.timestamp;
+const timestamp = std.time.milliTimestamp;
 const utils = @import("../utils/utils.zig");
 
 const entityImport = @import("entity.zig");
@@ -14,8 +14,8 @@ fn compareTurrets(t1: Turret, t2: Turret) !void {
     try expect(t1.entity.status.isEqual(t2.entity.status));
     try expect(t1.entity.defaultStatus.isEqual(t2.entity.defaultStatus));
 
-    try expect(t1.attackTime == t2.attackTime);
-    try expect(t1.attackDelay == t2.attackDelay);
+    try expect(t1.delay.delay == t2.delay.delay);
+    try expect(t1.delay.timer == t2.delay.timer);
 }
 
 test "Should copy the turret" {
@@ -46,7 +46,7 @@ test "Should attack if a point is on the attack range and not in cooldown" {
     };
     try expect(!t1.shouldAttack(tp, p2));
 
-    t1.attackTime = timestamp() + 424242;
+    t1.delay.timer = timestamp() + t1.delay.delay * 10000;
     try expect(!t1.shouldAttack(tp, p1));
 }
 
@@ -62,8 +62,8 @@ test "Should decrease enemy hp" {
 test "Should reset the attack delay" {
     var turret = Turret.new();
 
-    const oldTimestamp = turret.attackTime;
+    const oldTimestamp = turret.delay.timer;
     turret.resetDelay();
 
-    try expect(oldTimestamp < turret.attackTime);
+    try expect(oldTimestamp < turret.delay.timer);
 }
