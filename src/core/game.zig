@@ -148,24 +148,36 @@ pub const Game = struct {
                 turretPosition.x = turretPosition.x * gridSize + offset.x;
                 turretPosition.y = turretPosition.y * gridSize + offset.y;
 
+                var nearestEnemy: ?*Enemy = null;
                 for (self.enemies.items) |enemy| {
                     if (enemy.entity.status.health <= 0) continue;
                     const enemyCenter = enemy.box.getCenter();
 
                     // TODO: Maybe move to nearest enemy approach
                     if (turret.shouldAttack(turretPosition, enemyCenter)) {
-                        const turretRect = utils.Rectangle{
-                            .x = turretPosition.x + turretOffset.x,
-                            .y = turretPosition.y + turretOffset.y,
-                            .w = 8,
-                            .h = 4,
-                        };
-                        const projectile = turret.shoot(turretRect, enemy);
-                        try self.projectiles.append(projectile);
+                        if (nearestEnemy) |currentEnemy| {
+                            const currentDist = turretPosition.calcDist(&currentEnemy.box.getCenter());
+                            const otherDist = turretPosition.calcDist(&enemy.box.getCenter());
 
-                        turret.resetDelay();
-                        break;
+                            if (currentDist > otherDist) {
+                                nearestEnemy = enemy;
+                            }
+                        } else {
+                            nearestEnemy = enemy;
+                        }
                     }
+                }
+                if (nearestEnemy) |enemy| {
+                    const turretRect = utils.Rectangle{
+                        .x = turretPosition.x + turretOffset.x,
+                        .y = turretPosition.y + turretOffset.y,
+                        .w = 8,
+                        .h = 4,
+                    };
+                    const projectile = turret.shoot(turretRect, enemy);
+                    try self.projectiles.append(projectile);
+
+                    turret.resetDelay();
                 }
             }
         }

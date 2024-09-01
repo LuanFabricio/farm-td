@@ -85,12 +85,12 @@ pub fn main() !void {
         .h = 64,
     };
 
-    for (3..game.turretGrid.height) |i| {
+    for (2..game.turretGrid.height) |i| {
         var spawnerBox: utils.Rectangle = undefined;
         spawnerBox.copy(spawnerBase);
         spawnerBox.y += @as(f32, @floatFromInt(i)) * gridSize;
 
-        try game.addEnemySpawn(enemy.EnemySpawner.new(30, spawnerBox));
+        try game.addEnemySpawn(enemy.EnemySpawner.new(5, spawnerBox));
     }
 
     var render = Render.init(SCREEN_WIDTH, SCREEN_HEIGHT);
