@@ -2,6 +2,7 @@ const std = @import("std");
 const testing = std.testing;
 
 test {
+    _ = @import("core/test_game.zig");
     _ = @import("core/test_grid.zig");
     _ = @import("core/test_entity.zig");
     _ = @import("core/test_status.zig");
