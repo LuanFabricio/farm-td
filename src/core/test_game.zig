@@ -5,6 +5,7 @@ const utils = @import("../utils/utils.zig");
 
 const enemyImport = @import("enemy.zig");
 const EnemySpawner = enemyImport.EnemySpawner;
+const Enemy = enemyImport.Enemy;
 
 const gameImport = @import("game.zig");
 const Game = gameImport.Game;
@@ -28,4 +29,30 @@ test "It should add a enemy spawner" {
     try expect(newSpawner.baseBox.y == gameSpawner.baseBox.y);
     try expect(newSpawner.baseBox.w == gameSpawner.baseBox.w);
     try expect(newSpawner.baseBox.h == gameSpawner.baseBox.h);
+}
+
+test "It should add an enemy" {
+    var game = try Game.init(0, 32, 32, 32, 32, 32, 32);
+    defer game.deinit();
+    try expect(game.enemies.items.len == 0);
+
+    const enemy1 = try Enemy.init(utils.Rectangle{
+        .x = 10,
+        .y = 10,
+        .w = 32,
+        .h = 32,
+    });
+
+    try game.addEnemy(enemy1);
+    try expect(game.enemies.items.len == 1);
+
+    const enemy2 = try Enemy.init(utils.Rectangle{
+        .x = 20,
+        .y = 20,
+        .w = 22,
+        .h = 22,
+    });
+
+    try game.addEnemy(enemy2);
+    try expect(game.enemies.items.len == 2);
 }
