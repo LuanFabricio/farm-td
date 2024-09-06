@@ -23,8 +23,8 @@ test "It should add a enemy spawner" {
     // Comparing enemy spawners
     const gameSpawner = game.enemySpawners.items[0];
 
-    try expect(newSpawner.delay == gameSpawner.delay);
-    try expect(newSpawner.spawnTime == gameSpawner.spawnTime);
+    try expect(newSpawner.delay.delay == gameSpawner.delay.delay);
+    try expect(newSpawner.delay.timer == gameSpawner.delay.timer);
     try expect(newSpawner.baseBox.x == gameSpawner.baseBox.x);
     try expect(newSpawner.baseBox.y == gameSpawner.baseBox.y);
     try expect(newSpawner.baseBox.w == gameSpawner.baseBox.w);
