@@ -29,7 +29,7 @@ pub const Farm = struct {
     }
 
     pub fn heap_clone(self: *const This) !*This {
-        return try This.init(self.cost, self.gain, self.delay);
+        return try This.init(self.cost, self.gain, self.delay.delay);
     }
 
     pub fn getGold(self: *This) ?u32 {
