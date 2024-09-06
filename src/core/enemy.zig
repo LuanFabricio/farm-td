@@ -88,25 +88,22 @@ pub const Enemy = struct {
 };
 
 pub const EnemySpawner = struct {
-    delay: i64,
-    spawnTime: i64,
+    delay: Delay,
+    // delay: i64,
+    // spawnTime: i64,
     baseBox: utils.Rectangle,
 
     pub fn new(delay: i64, baseBox: utils.Rectangle) EnemySpawner {
         return EnemySpawner{
-            .delay = delay,
-            .spawnTime = timestamp(),
+            .delay = Delay.new(delay, false),
             .baseBox = baseBox,
         };
     }
 
     pub fn spawn(self: *EnemySpawner) !?*Enemy {
-        const now = timestamp();
-        if (self.spawnTime > now) {
-            return null;
-        }
-        self.spawnTime = now + self.delay;
+        if (self.delay.onCooldown()) return null;
 
+        self.delay.applyDelay();
         return try Enemy.init(self.baseBox);
     }
 };

@@ -48,13 +48,13 @@ test "Should spawn an enemy and update the spawnTime" {
         .h = 42,
     };
     var spawner = EnemySpawner.new(15, baseBox);
-    const oldAttackTime = spawner.spawnTime;
+    const oldAttackTime = spawner.delay.timer;
 
     const e = try spawner.spawn();
     defer if (e) |enemy| Allocator.destroy(enemy);
     try expect(e != null);
 
-    try expect(spawner.spawnTime > oldAttackTime);
+    try expect(spawner.delay.timer > oldAttackTime);
 }
 
 test "Should attack another entity" {
