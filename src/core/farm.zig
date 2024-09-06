@@ -4,6 +4,7 @@ const Allocator = std.heap.page_allocator;
 const timestamp = std.time.timestamp;
 
 const utils = @import("../utils/utils.zig");
+const Delay = @import("../utils/delay.zig").Delay;
 
 pub const FARM_SIZE = utils.Point{
     .x = 32,
@@ -14,15 +15,15 @@ pub const Farm = struct {
     const This = @This();
     cost: u32,
     gain: u32,
-    delay: i64,
-    goldTime: i64,
+    // delay: i64,
+    // goldTime: i64,
+    delay: Delay,
 
     pub fn init(cost: u32, gain: u32, delay: i64) !*This {
         const farmPtr = try Allocator.create(This);
         farmPtr.cost = cost;
         farmPtr.gain = gain;
-        farmPtr.delay = delay;
-        farmPtr.goldTime = timestamp() + delay;
+        farmPtr.delay = Delay.new(delay, true);
 
         return farmPtr;
     }
@@ -32,10 +33,9 @@ pub const Farm = struct {
     }
 
     pub fn getGold(self: *This) ?u32 {
-        const now = timestamp();
-        if (now < self.goldTime) return null;
+        if (self.delay.onCooldown()) return null;
 
-        self.goldTime = now + self.delay;
+        self.delay.applyDelay();
         return self.gain;
     }
 };

@@ -11,7 +11,7 @@ test "Should start in cooldown" {
     defer Allocator.destroy(farmItem);
 
     const now = timestamp();
-    try expect(now < farmItem.goldTime);
+    try expect(now < farmItem.delay.timer);
 }
 
 test "Should get gold and update the goldTime with delay" {
@@ -20,14 +20,14 @@ test "Should get gold and update the goldTime with delay" {
     var farmItem = try Farm.init(10, goldGain, delay);
     defer Allocator.destroy(farmItem);
     // NOTE: Reseting the cooldown
-    farmItem.goldTime = timestamp();
-    const oldTime = farmItem.goldTime;
+    farmItem.delay.timer = timestamp();
+    const oldTime = farmItem.delay.timer;
 
     const gold = farmItem.getGold();
     try expect(gold != null);
     try expect(gold.? == goldGain);
 
-    try expect(oldTime < farmItem.goldTime);
+    try expect(oldTime < farmItem.delay.timer);
 
     const nullGold = farmItem.getGold();
     try expect(nullGold == null);
