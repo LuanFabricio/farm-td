@@ -32,3 +32,19 @@ test "Should get gold and update the goldTime with delay" {
     const nullGold = farmItem.getGold();
     try expect(nullGold == null);
 }
+
+test "Should create a copy into heap" {
+    const goldGain = 42;
+    const delay = 2;
+
+    const farmItem = try Farm.init(10, goldGain, delay);
+    defer Allocator.destroy(farmItem);
+
+    const heapCopyFarmItem = try farmItem.heap_clone();
+    defer Allocator.destroy(heapCopyFarmItem);
+
+    try expect(heapCopyFarmItem.delay.delay == farmItem.delay.delay);
+    try expect(heapCopyFarmItem.delay.timer == farmItem.delay.timer);
+    try expect(heapCopyFarmItem.cost == farmItem.cost);
+    try expect(heapCopyFarmItem.gain == farmItem.gain);
+}
