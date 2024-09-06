@@ -69,9 +69,9 @@ pub fn main() !void {
 
     // delay = Delay.new(500, true);
 
-    game.farmGrid.addItem(0, 0, try Farm.init(32, 1600, 15));
+    game.farmGrid.addItem(0, 0, try Farm.init(32, 1600, 15000));
 
-    game.farmBuyGrid.addItem(0, 0, try Farm.init(32, 1600, 10));
+    game.farmBuyGrid.addItem(0, 0, try Farm.init(32, 1600, 15000));
     game.turretBuyGrid.addItem(0, 0, try turret.Turret.init());
 
     game.cursorTurret = try turret.Turret.init();
@@ -90,7 +90,7 @@ pub fn main() !void {
         spawnerBox.copy(spawnerBase);
         spawnerBox.y += @as(f32, @floatFromInt(i)) * gridSize;
 
-        try game.addEnemySpawn(enemy.EnemySpawner.new(5, spawnerBox));
+        try game.addEnemySpawn(enemy.EnemySpawner.new(5000, spawnerBox));
     }
 
     var render = Render.init(SCREEN_WIDTH, SCREEN_HEIGHT);
