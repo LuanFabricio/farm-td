@@ -68,7 +68,7 @@ pub const Enemy = struct {
         return self.canAttack() and self.otherOnRange(otherPosition);
     }
 
-    fn otherOnRange(self: *const This, otherPos: utils.Point) bool {
+    pub fn otherOnRange(self: *const This, otherPos: utils.Point) bool {
         const enemyPos = self.box.getCenter();
         const dist = enemyPos.calcDist(&otherPos);
         return dist <= self.entity.status.range;

@@ -85,7 +85,7 @@ pub fn main() !void {
         .h = 64,
     };
 
-    for (0..game.turretGrid.height) |i| {
+    for (4..game.turretGrid.height) |i| {
         var spawnerBox: utils.Rectangle = undefined;
         spawnerBox.copy(spawnerBase);
         spawnerBox.y += @as(f32, @floatFromInt(i)) * gridSize;
@@ -359,15 +359,15 @@ fn updateScene(render: Render, game: *Game, testHB: *TestHB) !void {
     const frameTime = render.getFrameTime();
     testHB.hb2.angle = @as(f32, @floatCast(@mod(render.getTime() * 100, 360)));
     // std.debug.print("Moving {d} enemys\n", .{game.enemies.items.len});
-    for (game.enemies.items) |currentEnemy| {
-        currentEnemy.move(frameTime);
-    }
+    // for (game.enemies.items) |currentEnemy| {
+    //     currentEnemy.move(frameTime);
+    // }
 
     try game.turretShoot(turretGridOffset, gridSize);
     // TODO(luan): Maybe move maxWidth to Game property
     game.cleanDeadEnemies(@as(f32, @floatFromInt(render.screenWidth)));
 
-    try game.enemyAttack(turretGridOffset, gridSize);
+    try game.enemyMoveOrAttack(turretGridOffset, gridSize, frameTime);
     game.cleanDeadTurrets();
 
     game.projectileRun(frameTime);

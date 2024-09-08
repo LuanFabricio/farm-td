@@ -217,8 +217,9 @@ pub const Game = struct {
         }
     }
 
-    pub fn enemyAttack(self: *This, turretOffset: utils.Point, gridSize: f32) !void {
+    pub fn enemyMoveOrAttack(self: *This, turretOffset: utils.Point, gridSize: f32, frametime: f32) !void {
         for (self.enemies.items) |enemy| {
+            var canMove = true;
             for (self.turretGrid.items.items, 0..) |turretOption, idx| {
                 if (turretOption == null) continue;
 
@@ -228,13 +229,25 @@ pub const Game = struct {
                 turretPosition.x += turretImport.TURRET_SIZE.x;
                 turretPosition.y += turretImport.TURRET_SIZE.y;
 
+                if (enemy.otherOnRange(turretPosition)) {
+                    canMove = false;
+                }
                 if (enemy.shouldAttack(turretPosition)) {
                     const turret = turretOption.?;
                     enemy.attackEntity(&turret.entity);
                     enemy.resetDelay();
+
+                    std.debug.print("Hit ", .{});
                     break;
                 }
             }
+
+            // std.debug.print("Enemy: {any}\n", .{enemy.box});
+            if (canMove) {
+                enemy.move(frametime);
+            }
+
+            std.debug.print("===\n", .{});
         }
     }
 
