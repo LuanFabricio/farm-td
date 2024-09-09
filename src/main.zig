@@ -17,7 +17,6 @@ const farmImport = @import("core/farm.zig");
 const Farm = farmImport.Farm;
 
 const Render = @import("render/render.zig").Render;
-// const spriteImport = @import("render/sprite.zig");
 const spriteImport = @import("render/sprite.zig");
 const Sprite = spriteImport.Sprite;
 const SpriteSheet = spriteImport.SpriteSheet;
@@ -61,13 +60,26 @@ const TestHB = struct {
     hb2: HitBox,
 };
 
+const SpriteMap = struct {
+    const This = @This();
+    laserSprite: Sprite,
+
+    pub fn load_all() This {
+        return This{
+            .laserSprite = Sprite.load_texture("assets/sprites/projectile.png"),
+        };
+    }
+
+    pub fn unload_all(self: *const This) void {
+        self.laserSprite.unload_texture();
+    }
+};
+
 const Projectile = @import("./core/projectile.zig").Projectile;
 
 pub fn main() !void {
     var game = try Game.init(300, 7, 5, 2, 4, 1, 2);
     defer game.deinit();
-
-    // delay = Delay.new(500, true);
 
     game.farmGrid.addItem(0, 0, try Farm.init(32, 1600, 15000));
 
@@ -95,6 +107,9 @@ pub fn main() !void {
 
     var render = Render.init(SCREEN_WIDTH, SCREEN_HEIGHT);
     defer render.deinit();
+
+    const spriteMap = SpriteMap.load_all();
+    defer spriteMap.unload_all();
 
     const testColors = [_]utils.Color{
         utils.Color{ .r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff },
@@ -143,7 +158,7 @@ pub fn main() !void {
 
     while (render.shouldRender()) {
         // TODO: Remove testSpr
-        drawScene(render, &game, &testSprts, &testHB);
+        drawScene(render, &game, &testSprts, &testHB, &spriteMap);
         updateScene(render, &game, &testHB) catch |err| std.debug.print("Update error: {any}\n", .{err});
         try drawUI(render, &game);
 
@@ -151,7 +166,7 @@ pub fn main() !void {
     }
 }
 
-fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *TestHB) void {
+fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *TestHB, spriteMap: *const SpriteMap) void {
     const baseColor = utils.Color{
         .r = 0xaa,
         .g = 0xaa,
@@ -231,7 +246,6 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
     testSprts.testCustomSh2.animationState.nextSprite();
 
     const colorIdx = testSprts.testColors.animationState.currentSprite;
-    // std.debug.print("Color: {any}\n", .{testSprts.testColors.sprites.items[colorIdx]});
     render.drawRectangle(
         @as(i32, @intCast(render.screenWidth - 64)),
         @as(i32, @intCast(render.screenHeight - 64)),
@@ -300,15 +314,20 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
 
     const r = testHB.hb1.getIntersections(testHB.hb2);
     if (r) |colPoint| {
-        // std.debug.print("Point: {d}, {d}\n", colPoint);
         const x: c_int = @intFromFloat(colPoint.x);
         const y: c_int = @intFromFloat(colPoint.y);
         utils.Raylib.DrawCircle(x, y, 4, colorPoint.toRayColor());
     }
 
-    const projColor = utils.Color{ .r = 0xfa, .g = 0xfa, .b = 0xfa, .a = 0xff };
     for (game.projectiles.items) |proj| {
-        render.drawRectangleRectRotated(proj.hitbox.hitbox, projColor, proj.hitbox.angle);
+        render.drawSpriteRotated(
+            spriteMap.laserSprite,
+            utils.Point{
+                .x = proj.hitbox.hitbox.x,
+                .y = proj.hitbox.hitbox.y,
+            },
+            proj.hitbox.angle,
+        );
     }
 }
 
@@ -324,7 +343,6 @@ fn updateScene(render: Render, game: *Game, testHB: *TestHB) !void {
 
     if (Input.isMouseBntPressed(input.MouseBntEnum.Left)) {
         const mousePoint = Input.getMousePoint();
-        // std.debug.print("Mouse point: {any}\n", .{mousePoint});
 
         if (game.turretGrid.worldToGrid(mousePoint, turretGridOffset, gridSize)) |p| {
             var newTurretPtr = try allocator.create(turret.Turret);
@@ -358,10 +376,6 @@ fn updateScene(render: Render, game: *Game, testHB: *TestHB) !void {
 
     const frameTime = render.getFrameTime();
     testHB.hb2.angle = @as(f32, @floatCast(@mod(render.getTime() * 100, 360)));
-    // std.debug.print("Moving {d} enemys\n", .{game.enemies.items.len});
-    // for (game.enemies.items) |currentEnemy| {
-    //     currentEnemy.move(frameTime);
-    // }
 
     try game.turretShoot(turretGridOffset, gridSize);
     // TODO(luan): Maybe move maxWidth to Game property
@@ -427,10 +441,6 @@ fn drawEnemy(render: Render, e: *const enemy.Enemy, baseColor: utils.Color) void
     const healthColor = utils.Color{ .r = 255, .g = 0, .b = 0, .a = 255 };
 
     displayHealth(render, enemyRect, baseColor, healthColor, enemyHpP);
-
-    // drawAttackRange
-    // const enemyCenter = e.box.getCenter();
-    // render.drawCircleLinesP(enemyCenter, e.entity.status.range, healthColor);
 }
 
 fn getHealthRect(rect: utils.Rectangle) utils.Rectangle {
