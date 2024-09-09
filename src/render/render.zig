@@ -8,6 +8,7 @@ const Point = utils.Point;
 
 const spriteImport = @import("sprite.zig");
 const SpriteSheet = spriteImport.SpriteSheet;
+const Sprite = spriteImport.Sprite;
 
 pub const Render = struct {
     screenWidth: usize,
@@ -86,6 +87,29 @@ pub const Render = struct {
         const x: c_int = @intFromFloat(position.x);
         const y: c_int = @intFromFloat(position.y);
         Raylib.DrawText(text, x, y, @as(c_int, @intCast(fontSize)), rayColor);
+    }
+
+    pub fn drawSprite(_: *const Render, sprite: Sprite, position: Point) void {
+        utils.Raylib.DrawTexture(
+            sprite.content,
+            @as(i32, @intFromFloat(position.x)),
+            @as(i32, @intFromFloat(position.y)),
+            Color.white().toRayColor(),
+        );
+    }
+
+    pub fn drawSpriteRotated(self: *const Render, sprite: Sprite, position: Point, angle: f32) void {
+        utils.Raylib.rlPushMatrix();
+        utils.Raylib.rlTranslatef(position.x + @as(f32, @floatFromInt(sprite.width)) / 2, position.y + @as(f32, @floatFromInt(sprite.height)) / 2, 0);
+        utils.Raylib.rlRotatef(angle, 0, 0, 1);
+        self.drawSprite(
+            sprite,
+            Point{
+                .x = -@as(f32, @floatFromInt(sprite.width)) / 2,
+                .y = -@as(f32, @floatFromInt(sprite.height)) / 2,
+            },
+        );
+        utils.Raylib.rlPopMatrix();
     }
 
     pub fn drawSpriteSheet(_: *const Render, position: utils.Point, spriteSheet: SpriteSheet, row: usize, col: usize) void {
