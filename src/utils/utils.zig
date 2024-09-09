@@ -7,10 +7,20 @@ pub const Raylib = @cImport({
 });
 
 pub const Color = struct {
+    const This = @This();
     r: u8,
     g: u8,
     b: u8,
     a: u8,
+
+    pub fn white() This {
+        return This{
+            .r = 0xff,
+            .g = 0xff,
+            .b = 0xff,
+            .a = 0xff,
+        };
+    }
 
     pub fn toRayColor(self: *const Color) Raylib.Color {
         return .{ .r = self.r, .g = self.g, .b = self.b, .a = self.a };
