@@ -246,8 +246,6 @@ pub const Game = struct {
             if (canMove) {
                 enemy.move(frametime);
             }
-
-            std.debug.print("===\n", .{});
         }
     }
 
