@@ -229,6 +229,9 @@ pub const Game = struct {
                 turretPosition.x += turretImport.TURRET_SIZE.x;
                 turretPosition.y += turretImport.TURRET_SIZE.y;
 
+                // TODO: Fix this, to only check if the next step have
+                // an enemy
+                // Maybe, move to a Hitbox step function collision
                 if (enemy.otherOnRange(turretPosition)) {
                     canMove = false;
                 }
