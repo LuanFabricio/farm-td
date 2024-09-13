@@ -1,4 +1,5 @@
 # Tests
+TODO: Update this
 ## Runing tests
 `zig build test --summary all -freference-trace`
 
