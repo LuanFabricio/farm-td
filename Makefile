@@ -5,6 +5,10 @@ run:
 
 test:
 	zig build test --summary all -freference-trace
-test-cov:
+
+test-clean:
+	rm -rf zig-cache
+
+test-cov: test-clean test
 	rm -rf kcov-output
 	./test_cov.sh
