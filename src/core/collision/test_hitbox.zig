@@ -1,7 +1,7 @@
 const std = @import("std");
 const expect = std.testing.expect;
 
-const utils = @import("../utils/utils.zig");
+const utils = @import("../../utils/utils.zig");
 const HitBox = @import("hitbox.zig").HitBox;
 
 test "It can collide" {

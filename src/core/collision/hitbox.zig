@@ -1,6 +1,6 @@
 const std = @import("std");
 
-const utils = @import("../utils/utils.zig");
+const utils = @import("../../utils/utils.zig");
 
 const functionImport = @import("function.zig");
 const Function = functionImport.Function;

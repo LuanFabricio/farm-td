@@ -2,8 +2,8 @@ const std = @import("std");
 const Pi = std.math.pi;
 
 const utils = @import("../utils/utils.zig");
-const HitBox = @import("../collision/hitbox.zig").HitBox;
-const Enemy = @import("./enemy.zig").Enemy;
+const HitBox = @import("collision/hitbox.zig").HitBox;
+const Enemy = @import("enemy.zig").Enemy;
 
 pub const PROJECTILE_DEFAULT_COLOR = utils.Color{
     .r = 0xff,

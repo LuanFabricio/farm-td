@@ -21,7 +21,7 @@ const Farm = farmImport.Farm;
 
 const Projectile = @import("projectile.zig").Projectile;
 
-const HitBox = @import("../collision/hitbox.zig").HitBox;
+const HitBox = @import("collision/hitbox.zig").HitBox;
 
 pub const TurretGrid = Grid(Turret);
 pub const FarmGrid = Grid(Farm);

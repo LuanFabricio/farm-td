@@ -37,7 +37,7 @@ const Game = gameImport.Game;
 const TurretGrid = gameImport.TurretGrid;
 const FarmGrid = gameImport.FarmGrid;
 
-const hitboxImport = @import("collision/hitbox.zig");
+const hitboxImport = @import("core/collision/hitbox.zig");
 const HitBox = hitboxImport.HitBox;
 
 const SCREEN_WIDTH: usize = 1280;

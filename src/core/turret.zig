@@ -5,8 +5,8 @@ const timestamp = std.time.timestamp;
 
 const utils = @import("../utils/utils.zig");
 const Delay = @import("../utils/delay.zig").Delay;
-const HitBox = @import("../collision/hitbox.zig").HitBox;
 
+const HitBox = @import("collision/hitbox.zig").HitBox;
 const Projectile = @import("projectile.zig").Projectile;
 const Enemy = @import("enemy.zig").Enemy;
 const Entity = @import("entity.zig").Entity;

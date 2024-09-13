@@ -13,6 +13,6 @@ test {
     _ = @import("utils/test_utils_rectangle.zig");
     _ = @import("utils/test_utils_point.zig");
     _ = @import("utils/test_utils_color.zig");
-    _ = @import("collision/test_hitbox.zig");
-    _ = @import("collision/test_function.zig");
+    _ = @import("core/collision/test_hitbox.zig");
+    _ = @import("core/collision/test_function.zig");
 }
