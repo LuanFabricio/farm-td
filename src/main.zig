@@ -62,16 +62,19 @@ const TestHB = struct {
 
 const SpriteMap = struct {
     const This = @This();
-    laserSprite: Sprite,
+    projectile: Sprite,
+    turret: Sprite,
 
     pub fn load_all() This {
         return This{
-            .laserSprite = Sprite.load_texture("assets/sprites/projectile.png"),
+            .projectile = Sprite.load_texture("assets/sprites/projectile.png"),
+            .turret = Sprite.load_texture("assets/sprites/turret.png"),
         };
     }
 
     pub fn unload_all(self: *const This) void {
-        self.laserSprite.unload_texture();
+        self.projectile.unload_texture();
+        self.turret.unload_texture();
     }
 };
 
@@ -185,8 +188,8 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
         if (currentItem) |currentTurret| {
             const turretPoint = game.turretGrid.indexToXY(idx);
             const center = game.turretGrid.gridToWorld(turretPoint, turretGridOffset, gridSize);
-
-            drawGridItem(render, center, turret.DEFAULT_COLOR, turret.TURRET_SIZE);
+            drawTurret(render, center, spriteMap.turret);
+            // drawGridItem(render, center, turret.DEFAULT_COLOR, turret.TURRET_SIZE);
 
             const turretHealthRect = getHealthRect(getItemRect(center));
             const turretHpP: f32 = currentTurret.entity.healthPercentage();
@@ -221,7 +224,8 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
             const turretBuyPoint = game.turretBuyGrid.indexToXY(idx);
             const center = game.turretBuyGrid.gridToWorld(turretBuyPoint, turretBuyGridOffset, gridSize);
 
-            drawGridItem(render, center, turret.DEFAULT_COLOR, turret.TURRET_SIZE);
+            drawTurret(render, center, spriteMap.turret);
+            // drawGridItem(render, center, turret.DEFAULT_COLOR, turret.TURRET_SIZE);
         }
     }
 
@@ -321,7 +325,7 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
 
     for (game.projectiles.items) |proj| {
         render.drawSpriteRotated(
-            spriteMap.laserSprite,
+            spriteMap.projectile,
             utils.Point{
                 .x = proj.hitbox.hitbox.x,
                 .y = proj.hitbox.hitbox.y,
@@ -411,6 +415,13 @@ fn displayHealth(render: Render, baseRect: utils.Rectangle, baseColor: utils.Col
     render.drawRectangleRect(baseRect, baseColor);
     healthRect.x += baseRect.w - healthRect.w;
     render.drawRectangleRect(healthRect, healthColor);
+}
+
+fn drawTurret(render: Render, center: utils.Point, turretSprite: Sprite) void {
+    var lcenter = center;
+    lcenter.x += @as(f32, @floatFromInt((gridSize - turretSprite.width) / 2));
+    lcenter.y += @as(f32, @floatFromInt(turretSprite.height / 2));
+    render.drawSprite(turretSprite, lcenter);
 }
 
 fn drawGridItem(render: Render, center: utils.Point, itemColor: utils.Color, itemSize: utils.Point) void {
