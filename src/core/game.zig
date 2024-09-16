@@ -218,6 +218,8 @@ pub const Game = struct {
     }
 
     pub fn enemyMoveOrAttack(self: *This, turretOffset: utils.Point, gridSize: f32, frametime: f32) !void {
+        // TODO(luan): Improve speed by pre-processing turret hitbox
+        // Maybe save in a cache
         for (self.enemies.items) |enemy| {
             var canMove = true;
             for (self.turretGrid.items.items, 0..) |turretOption, idx| {
@@ -229,19 +231,25 @@ pub const Game = struct {
                 turretPosition.x += turretImport.TURRET_SIZE.x;
                 turretPosition.y += turretImport.TURRET_SIZE.y;
 
-                // TODO: Fix this, to only check if the next step have
-                // an enemy
-                // Maybe, move to a Hitbox step function collision
-                if (enemy.otherOnRange(turretPosition)) {
-                    canMove = false;
-                }
-                if (enemy.shouldAttack(turretPosition)) {
-                    const turret = turretOption.?;
-                    enemy.attackEntity(&turret.entity);
-                    enemy.resetDelay();
+                const enemyHitbox = HitBox.new(enemy.box);
+                const turretRect = utils.Rectangle{
+                    .x = turretPosition.x,
+                    .y = turretPosition.y,
+                    .w = turretImport.TURRET_SIZE.x,
+                    .h = turretImport.TURRET_SIZE.y,
+                };
+                const turretHibox = HitBox.new(turretRect);
 
-                    std.debug.print("Hit ", .{});
-                    break;
+                if (enemyHitbox.checkCollision(&turretHibox)) {
+                    canMove = false;
+                    if (enemy.canAttack()) {
+                        const turret = turretOption.?;
+                        enemy.attackEntity(&turret.entity);
+                        enemy.resetDelay();
+
+                        std.debug.print("Hit ", .{});
+                        break;
+                    }
                 }
             }
 
