@@ -15,7 +15,7 @@ const gridImport = @import("grid.zig");
 const Grid = gridImport.Grid;
 const GridItemEnum = gridImport.GridItemEnum;
 
-const DEFAULT_SPEED: f32 = 55;
+pub const DEFAULT_SPEED: f32 = 55;
 
 pub const DEFAULT_COLOR = utils.Color{
     .r = 0x19,
@@ -74,7 +74,7 @@ pub const Enemy = struct {
         return dist <= self.entity.status.range;
     }
 
-    fn canAttack(self: *const This) bool {
+    pub fn canAttack(self: *const This) bool {
         return !self.attackDelay.onCooldown();
     }
 
