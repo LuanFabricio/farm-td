@@ -64,17 +64,20 @@ const SpriteMap = struct {
     const This = @This();
     projectile: Sprite,
     turret: Sprite,
+    goldFarm: Sprite,
 
     pub fn load_all() This {
         return This{
             .projectile = Sprite.load_texture("assets/sprites/projectile.png"),
             .turret = Sprite.load_texture("assets/sprites/turret.png"),
+            .goldFarm = Sprite.load_texture("assets/sprites/farm.png"),
         };
     }
 
     pub fn unload_all(self: *const This) void {
         self.projectile.unload_texture();
         self.turret.unload_texture();
+        self.goldFarm.unload_texture();
     }
 };
 
@@ -199,14 +202,15 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
         }
     }
 
-    const farmColor = utils.Color{ .r = 0xff, .g = 0xff, .b = 0x00, .a = 0xff };
+    // const farmColor = utils.Color{ .r = 0xff, .g = 0xff, .b = 0x00, .a = 0xff };
     const farmItems = game.farmGrid.getItems();
     for (farmItems, 0..) |item, idx| {
         if (item) |_| {
             const farmPoint = game.farmGrid.indexToXY(idx);
             const center = game.farmGrid.gridToWorld(farmPoint, farmGridOffset, gridSize);
 
-            drawGridItem(render, center, farmColor, farmImport.FARM_SIZE);
+            // drawGridItem(render, center, farmColor, farmImport.FARM_SIZE);
+            drawFarm(render, center, spriteMap.goldFarm);
         }
     }
 
@@ -215,7 +219,8 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
             const farmBuyPoint = game.farmBuyGrid.indexToXY(idx);
             const center = game.farmBuyGrid.gridToWorld(farmBuyPoint, farmBuyGridOffset, gridSize);
 
-            drawGridItem(render, center, farmColor, farmImport.FARM_SIZE);
+            // drawGridItem(render, center, farmColor, farmImport.FARM_SIZE);
+            drawFarm(render, center, spriteMap.goldFarm);
         }
     }
 
@@ -422,6 +427,13 @@ fn drawTurret(render: Render, center: utils.Point, turretSprite: Sprite) void {
     lcenter.x += @as(f32, @floatFromInt((gridSize - turretSprite.width) / 2));
     lcenter.y += @as(f32, @floatFromInt(turretSprite.height / 2));
     render.drawSprite(turretSprite, lcenter);
+}
+
+fn drawFarm(render: Render, center: utils.Point, farmSprite: Sprite) void {
+    var lcenter = center;
+    lcenter.x += @as(f32, @floatFromInt((gridSize - farmSprite.width) / 2));
+    lcenter.y += @as(f32, @floatFromInt(farmSprite.height / 2));
+    render.drawSprite(farmSprite, lcenter);
 }
 
 fn drawGridItem(render: Render, center: utils.Point, itemColor: utils.Color, itemSize: utils.Point) void {
