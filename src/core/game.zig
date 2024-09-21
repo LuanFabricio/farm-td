@@ -19,7 +19,9 @@ const Grid = gridImport.Grid;
 const farmImport = @import("farm.zig");
 const Farm = farmImport.Farm;
 
-const Projectile = @import("projectile.zig").Projectile;
+const projectileImport = @import("projectile.zig");
+const Projectile = projectileImport.Projectile;
+const ShootType = projectileImport.ShootType;
 
 const HitBox = @import("collision/hitbox.zig").HitBox;
 
@@ -208,9 +210,14 @@ pub const Game = struct {
     fn cleanOrphansProjectiles(self: *This, enemyPtr: *Enemy) void {
         var i: usize = 0;
         while (i < self.projectiles.items.len) {
-            if (self.projectiles.items[i].target == enemyPtr) {
-                _ = self.projectiles.swapRemove(i);
-                continue;
+            switch (self.projectiles.items[i].shootType) {
+                .follow => |target| {
+                    if (target == enemyPtr) {
+                        _ = self.projectiles.swapRemove(i);
+                        continue;
+                    }
+                },
+                else => {},
             }
 
             i += 1;
@@ -264,8 +271,8 @@ pub const Game = struct {
         var i: usize = 0;
         while (i < self.projectiles.items.len) {
             var projectile = &self.projectiles.items[i];
-            if (projectile.shouldDestroy(self.enemies.items)) {
-                projectile.applyDamage();
+            if (projectile.getEnemyHitted(self.enemies.items)) |enemy| {
+                projectile.applyDamage(&enemy.entity);
                 _ = self.projectiles.swapRemove(i);
                 continue;
             }

@@ -7,7 +7,9 @@ const utils = @import("../utils/utils.zig");
 const Delay = @import("../utils/delay.zig").Delay;
 
 const HitBox = @import("collision/hitbox.zig").HitBox;
-const Projectile = @import("projectile.zig").Projectile;
+const projectileImport = @import("projectile.zig");
+const Projectile = projectileImport.Projectile;
+const ShootType = projectileImport.ShootType;
 const Enemy = @import("enemy.zig").Enemy;
 const Entity = @import("entity.zig").Entity;
 
@@ -27,12 +29,14 @@ pub const Turret = struct {
     const This = @This();
     entity: Entity,
     delay: Delay,
+    shootType: ShootType,
 
     // Create on the stack
-    pub fn new() This {
+    pub fn new(shootType: ShootType) This {
         return This{
             .entity = Entity.defaultTurret(),
             .delay = Delay.new(750, false),
+            .shootType = shootType,
         };
     }
 
@@ -49,6 +53,7 @@ pub const Turret = struct {
     pub fn copy(self: *This, other: This) void {
         self.entity.copy(other.entity);
         self.delay = other.delay;
+        self.shootType = other.shootType;
     }
 
     pub fn shouldAttack(self: *const This, turretPosition: utils.Point, otherPosition: utils.Point) bool {
@@ -70,7 +75,7 @@ pub const Turret = struct {
     pub fn shoot(self: *const This, rect: utils.Rectangle, target: *Enemy) Projectile {
         return Projectile.new(
             HitBox.new(rect),
-            target,
+            ShootType{ .follow = target },
             self.entity.status.attack,
             -75.0,
         );

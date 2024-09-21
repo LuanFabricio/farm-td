@@ -4,6 +4,8 @@ const expect = std.testing.expect;
 const timestamp = std.time.milliTimestamp;
 const utils = @import("../utils/utils.zig");
 
+const ShootType = @import("projectile.zig").ShootType;
+
 const entityImport = @import("entity.zig");
 const Entity = entityImport.Entity;
 
@@ -19,7 +21,7 @@ fn compareTurrets(t1: Turret, t2: Turret) !void {
 }
 
 test "Should copy the turret" {
-    const t1 = Turret.new();
+    const t1 = Turret.new(ShootType{ .spam = undefined });
 
     var t2: Turret = undefined;
     t2.copy(t1);
@@ -28,7 +30,7 @@ test "Should copy the turret" {
 }
 
 test "Should attack if a point is on the attack range and not in cooldown" {
-    var t1 = Turret.new();
+    var t1 = Turret.new(ShootType{ .follow = undefined });
     const tp = utils.Point{
         .x = 400,
         .y = 200,
@@ -51,8 +53,8 @@ test "Should attack if a point is on the attack range and not in cooldown" {
 }
 
 test "Should decrease enemy hp" {
-    const turret = Turret.new();
     var e1 = Entity.defaultEnemy();
+    const turret = Turret.new(ShootType{ .spam = undefined });
 
     turret.attackEntity(&e1);
 
@@ -60,7 +62,7 @@ test "Should decrease enemy hp" {
 }
 
 test "Should reset the attack delay" {
-    var turret = Turret.new();
+    var turret = Turret.new(ShootType{ .spam = undefined });
 
     const oldTimestamp = turret.delay.timer;
     turret.resetDelay();

@@ -354,9 +354,6 @@ fn updateScene(render: Render, game: *Game, testHB: *TestHB) !void {
         const mousePoint = Input.getMousePoint();
 
         if (game.turretGrid.worldToGrid(mousePoint, turretGridOffset, gridSize)) |p| {
-            var newTurretPtr = try allocator.create(turret.Turret);
-            newTurretPtr.copy(turret.Turret.new());
-
             const x: usize = @intFromFloat(p.x);
             const y: usize = @intFromFloat(p.y);
             _ = try game.addTurret(x, y);
