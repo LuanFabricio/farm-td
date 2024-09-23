@@ -143,6 +143,12 @@ pub const Game = struct {
     }
 
     pub fn turretShoot(self: *This, offset: utils.Point, gridSize: f32) !void {
+        var projectileRect = utils.Rectangle{
+            .x = 0,
+            .y = 0,
+            .w = 8,
+            .h = 4,
+        };
         for (self.turretGrid.items.items, 0..) |turretOption, idx| {
             if (turretOption) |turret| {
                 const turretPosition = self.turretGrid.indexToXY(idx);
@@ -153,39 +159,55 @@ pub const Game = struct {
                     .h = turretImport.TURRET_SIZE.y,
                 };
                 const turretCenter = turretRect.getCenter();
+                projectileRect.x = turretCenter.x;
+                projectileRect.y = turretCenter.y;
 
-                var nearestEnemy: ?*Enemy = null;
-                for (self.enemies.items) |enemy| {
-                    if (enemy.entity.status.health <= 0) continue;
-                    const enemyCenter = enemy.box.getCenter();
-
-                    if (turret.shouldAttack(turretCenter, enemyCenter)) {
-                        if (nearestEnemy) |currentEnemy| {
-                            const currentDist = turretCenter.calcDist(&currentEnemy.box.getCenter());
-                            const otherDist = turretCenter.calcDist(&enemy.box.getCenter());
-
-                            if (currentDist > otherDist) {
-                                nearestEnemy = enemy;
-                            }
-                        } else {
-                            nearestEnemy = enemy;
-                        }
-                    }
-                }
-                if (nearestEnemy) |enemy| {
-                    const projectileRect = utils.Rectangle{
-                        .x = turretCenter.x,
-                        .y = turretCenter.y,
-                        .w = 8,
-                        .h = 4,
+                if (turret.canAttack()) {
+                    const projectile = switch (turret.shootType) {
+                        ShootType.spam => self.turretShootSpam(turret, projectileRect),
+                        ShootType.follow => self.turretShootTarget(turret, turretCenter, projectileRect),
                     };
-                    const projectile = turret.shoot(projectileRect, enemy);
-                    try self.projectiles.append(projectile);
 
-                    turret.resetDelay();
+                    if (projectile) |proj| {
+                        try self.projectiles.append(proj);
+                    }
                 }
             }
         }
+    }
+
+    fn turretShootSpam(_: *This, turret: *Turret, projectileRect: utils.Rectangle) ?Projectile {
+        const projectile = turret.shootSpam(projectileRect);
+        turret.resetDelay();
+        return projectile;
+    }
+
+    fn turretShootTarget(self: *This, turret: *Turret, turretCenter: utils.Point, projectileRect: utils.Rectangle) ?Projectile {
+        var nearestEnemy: ?*Enemy = null;
+        for (self.enemies.items) |enemy| {
+            if (enemy.entity.status.health <= 0) continue;
+            const enemyCenter = enemy.box.getCenter();
+
+            if (turret.otherOnRange(turretCenter, enemyCenter)) {
+                if (nearestEnemy) |currentEnemy| {
+                    const currentDist = turretCenter.calcDist(&currentEnemy.box.getCenter());
+                    const otherDist = turretCenter.calcDist(&enemy.box.getCenter());
+
+                    if (currentDist > otherDist) {
+                        nearestEnemy = enemy;
+                    }
+                } else {
+                    nearestEnemy = enemy;
+                }
+            }
+        }
+        if (nearestEnemy) |enemy| {
+            const projectile = turret.shootFollow(projectileRect, enemy);
+            turret.resetDelay();
+            return projectile;
+        }
+
+        return null;
     }
 
     pub fn cleanDeadEnemies(self: *This, maxWidth: f32) void {
@@ -210,7 +232,7 @@ pub const Game = struct {
     fn cleanOrphansProjectiles(self: *This, enemyPtr: *Enemy) void {
         var i: usize = 0;
         while (i < self.projectiles.items.len) {
-            switch (self.projectiles.items[i].shootType) {
+            switch (self.projectiles.items[i].shootTarget) {
                 .follow => |target| {
                     if (target == enemyPtr) {
                         _ = self.projectiles.swapRemove(i);
