@@ -7,9 +7,12 @@ const utils = @import("../utils/utils.zig");
 const Delay = @import("../utils/delay.zig").Delay;
 
 const HitBox = @import("collision/hitbox.zig").HitBox;
+
 const projectileImport = @import("projectile.zig");
 const Projectile = projectileImport.Projectile;
 const ShootType = projectileImport.ShootType;
+const ShootTarget = projectileImport.ShootTarget;
+
 const Enemy = @import("enemy.zig").Enemy;
 const Entity = @import("entity.zig").Entity;
 
@@ -60,11 +63,11 @@ pub const Turret = struct {
         return self.otherOnRange(turretPosition, otherPosition) and self.canAttack();
     }
 
-    fn otherOnRange(self: *const This, turretPos: utils.Point, otherPos: utils.Point) bool {
+    pub fn otherOnRange(self: *const This, turretPos: utils.Point, otherPos: utils.Point) bool {
         const dist = turretPos.calcDist(&otherPos);
         return dist <= self.entity.status.range;
     }
-    fn canAttack(self: *const This) bool {
+    pub fn canAttack(self: *const This) bool {
         return !self.delay.onCooldown();
     }
 
@@ -72,10 +75,19 @@ pub const Turret = struct {
         otherEntity.status.health -= self.entity.status.attack;
     }
 
-    pub fn shoot(self: *const This, rect: utils.Rectangle, target: *Enemy) Projectile {
+    pub fn shootSpam(self: *const This, rect: utils.Rectangle) Projectile {
         return Projectile.new(
             HitBox.new(rect),
-            ShootType{ .follow = target },
+            ShootTarget.spam,
+            self.entity.status.attack,
+            -75.0,
+        );
+    }
+
+    pub fn shootFollow(self: *const This, rect: utils.Rectangle, target: *Enemy) Projectile {
+        return Projectile.new(
+            HitBox.new(rect),
+            ShootTarget{ .follow = target },
             self.entity.status.attack,
             -75.0,
         );
