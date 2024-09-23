@@ -13,7 +13,12 @@ pub const PROJECTILE_DEFAULT_COLOR = utils.Color{
     .a = 0xff,
 };
 
-pub const ShootType = union(enum) {
+pub const ShootType = enum {
+    follow,
+    spam,
+};
+
+pub const ShootTarget = union(ShootType) {
     follow: *Enemy,
     spam: void,
 };
@@ -23,12 +28,12 @@ pub const Projectile = struct {
     hitbox: HitBox,
     damage: i32,
     speed: f32,
-    shootType: ShootType,
+    shootTarget: ShootTarget,
 
-    pub fn new(hitbox: HitBox, shootType: ShootType, damage: i32, speed: f32) This {
+    pub fn new(hitbox: HitBox, shootTarget: ShootTarget, damage: i32, speed: f32) This {
         return This{
             .hitbox = hitbox,
-            .shootType = shootType,
+            .shootTarget = shootTarget,
             .speed = speed,
             .damage = damage,
         };
@@ -39,13 +44,11 @@ pub const Projectile = struct {
     }
 
     pub fn updateAngle(self: *This) void {
-        switch (self.shootType) {
-            .follow => |target| {
-                const dx = self.hitbox.hitbox.x - target.box.x;
-                const dy = self.hitbox.hitbox.y - target.box.y;
-                self.hitbox.angle = std.math.atan2(dy, dx) * 180.0 / Pi;
-            },
-            else => {},
+        if (self.shootTarget == .follow) {
+            const target = self.shootTarget.follow;
+            const dx = self.hitbox.hitbox.x - target.box.x;
+            const dy = self.hitbox.hitbox.y - target.box.y;
+            self.hitbox.angle = std.math.atan2(dy, dx) * 180.0 / Pi;
         }
     }
 
