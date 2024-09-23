@@ -21,7 +21,7 @@ fn compareTurrets(t1: Turret, t2: Turret) !void {
 }
 
 test "Should copy the turret" {
-    const t1 = Turret.new(ShootType{ .spam = undefined });
+    const t1 = Turret.new(ShootType.spam);
 
     var t2: Turret = undefined;
     t2.copy(t1);
@@ -30,7 +30,7 @@ test "Should copy the turret" {
 }
 
 test "Should attack if a point is on the attack range and not in cooldown" {
-    var t1 = Turret.new(ShootType{ .follow = undefined });
+    var t1 = Turret.new(ShootType.spam);
     const tp = utils.Point{
         .x = 400,
         .y = 200,
@@ -54,7 +54,7 @@ test "Should attack if a point is on the attack range and not in cooldown" {
 
 test "Should decrease enemy hp" {
     var e1 = Entity.defaultEnemy();
-    const turret = Turret.new(ShootType{ .spam = undefined });
+    const turret = Turret.new(ShootType.spam);
 
     turret.attackEntity(&e1);
 
@@ -62,7 +62,7 @@ test "Should decrease enemy hp" {
 }
 
 test "Should reset the attack delay" {
-    var turret = Turret.new(ShootType{ .spam = undefined });
+    var turret = Turret.new(ShootType.spam);
 
     const oldTimestamp = turret.delay.timer;
     turret.resetDelay();
