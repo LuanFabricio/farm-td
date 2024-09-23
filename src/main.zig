@@ -81,7 +81,9 @@ const SpriteMap = struct {
     }
 };
 
-const Projectile = @import("./core/projectile.zig").Projectile;
+const projectileImport = @import("./core/projectile.zig");
+const Projectile = projectileImport.Projectile;
+const ShootType = projectileImport.ShootType;
 
 pub fn main() !void {
     var game = try Game.init(300, 7, 5, 2, 4, 1, 2);
@@ -91,6 +93,10 @@ pub fn main() !void {
 
     game.farmBuyGrid.addItem(0, 0, try Farm.init(32, 1600, 15000));
     game.turretBuyGrid.addItem(0, 0, try turret.Turret.init());
+
+    var spamTurret = try turret.Turret.init();
+    spamTurret.shootType = ShootType.spam;
+    game.turretBuyGrid.addItem(1, 0, spamTurret);
 
     game.cursorTurret = try turret.Turret.init();
     _ = try game.addTurret(game.turretGrid.width - 1, 2);
