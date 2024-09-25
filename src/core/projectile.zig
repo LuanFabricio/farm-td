@@ -1,10 +1,13 @@
 const std = @import("std");
+const timestamp = std.time.milliTimestamp;
 const Pi = std.math.pi;
 
 const utils = @import("../utils/utils.zig");
 const HitBox = @import("collision/hitbox.zig").HitBox;
 const Enemy = @import("enemy.zig").Enemy;
 const Entity = @import("entity.zig").Entity;
+
+pub const PROJECTILE_FILETIME_MS: i64 = 30 * 1000;
 
 pub const PROJECTILE_DEFAULT_COLOR = utils.Color{
     .r = 0xff,
@@ -29,6 +32,7 @@ pub const Projectile = struct {
     damage: i32,
     speed: f32,
     shootTarget: ShootTarget,
+    expirationTime: i64,
 
     pub fn new(hitbox: HitBox, shootTarget: ShootTarget, damage: i32, speed: f32) This {
         return This{
@@ -36,6 +40,7 @@ pub const Projectile = struct {
             .shootTarget = shootTarget,
             .speed = speed,
             .damage = damage,
+            .expirationTime = timestamp() + PROJECTILE_FILETIME_MS,
         };
     }
 
