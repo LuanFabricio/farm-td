@@ -1,6 +1,7 @@
 const std = @import("std");
 
 const timestamp = std.time.timestamp;
+const timestampMS = std.time.milliTimestamp;
 const Allocator = std.heap.page_allocator;
 const ArrayList = std.ArrayList;
 
@@ -242,6 +243,18 @@ pub const Game = struct {
                 else => {},
             }
 
+            i += 1;
+        }
+    }
+
+    pub fn cleanExpiredProjectiles(self: *This) void {
+        var i: usize = 0;
+        while (i < self.projectiles.items.len) {
+            const projectile = self.projectiles.items[i];
+            if (projectile.expirationTime < timestampMS()) {
+                _ = self.projectiles.swapRemove(i);
+                continue;
+            }
             i += 1;
         }
     }
