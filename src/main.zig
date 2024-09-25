@@ -397,6 +397,7 @@ fn updateScene(render: Render, game: *Game, testHB: *TestHB) !void {
     game.cleanDeadTurrets();
 
     game.projectileRun(frameTime);
+    game.cleanExpiredProjectiles();
 }
 
 fn drawUI(render: Render, game: *const Game) !void {
