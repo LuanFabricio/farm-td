@@ -125,6 +125,13 @@ pub const Rectangle = struct {
         };
     }
 
+    pub fn getSize(self: *const This) Point {
+        return Point{
+            .x = self.w,
+            .y = self.h,
+        };
+    }
+
     pub fn getPoints(self: *const This) [4]Point {
         const lt = Point{ .x = self.x, .y = self.y };
         const rt = Point{ .x = self.x + self.w, .y = self.y };
