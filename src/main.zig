@@ -185,6 +185,7 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
         .b = 0xaa,
         .a = 0xff,
     };
+    const colorPoint = utils.Color{ .r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff };
 
     render.beginDraw();
     defer render.endDraw();
@@ -205,6 +206,7 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
             const healthColor = utils.Color{ .r = 255, .g = 0, .b = 0, .a = 255 };
 
             displayHealth(render, turretHealthRect, baseColor, healthColor, turretHpP);
+            drawPointHitbox(render, center, turret.TURRET_SIZE);
         }
     }
 
@@ -276,56 +278,8 @@ fn drawScene(render: Render, game: *const Game, testSprts: *TestSprts, testHB: *
     const h2Color = utils.Color{ .r = 0xff, .g = 0x10, .b = 0x10, .a = 0xff };
     render.drawRectangleRectRotated(testHB.hb2.hitbox, h2Color, testHB.hb2.angle);
 
-    const colorPoint = utils.Color{ .r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff };
-    for (testHB.hb1.getLines()) |line| {
-        const p1 = utils.Point{
-            .x = switch (line.function.mainAxis) {
-                .X => line.points[0].x,
-                .Y => line.function.calc(line.points[0].y),
-            },
-            .y = switch (line.function.mainAxis) {
-                .X => line.function.calc(line.points[0].x),
-                .Y => line.points[0].y,
-            },
-        };
-
-        const p2 = utils.Point{
-            .x = switch (line.function.mainAxis) {
-                .X => line.points[1].x,
-                .Y => line.function.calc(line.points[1].y),
-            },
-            .y = switch (line.function.mainAxis) {
-                .X => line.function.calc(line.points[1].x),
-                .Y => line.points[1].y,
-            },
-        };
-        render.drawLineP(p1, p2, colorPoint);
-    }
-
-    for (testHB.hb2.getLines()) |line| {
-        const p1 = utils.Point{
-            .x = switch (line.function.mainAxis) {
-                .X => line.points[0].x,
-                .Y => line.function.calc(line.points[0].y),
-            },
-            .y = switch (line.function.mainAxis) {
-                .X => line.function.calc(line.points[0].x),
-                .Y => line.points[0].y,
-            },
-        };
-
-        const p2 = utils.Point{
-            .x = switch (line.function.mainAxis) {
-                .X => line.points[1].x,
-                .Y => line.function.calc(line.points[1].y),
-            },
-            .y = switch (line.function.mainAxis) {
-                .X => line.function.calc(line.points[1].x),
-                .Y => line.points[1].y,
-            },
-        };
-        render.drawLineP(p1, p2, colorPoint);
-    }
+    drawHitbox(render, testHB.hb1);
+    drawHitbox(render, testHB.hb2);
 
     const r = testHB.hb1.getIntersections(testHB.hb2);
     if (r) |colPoint| {
@@ -510,4 +464,42 @@ fn drawGrid(render: Render, width: usize, height: usize, offset: utils.Point) vo
         p1.x += gridSize;
         p2.x += gridSize;
     }
+}
+
+fn drawHitbox(render: Render, hitbox: HitBox) void {
+    const colorPoint = utils.Color{ .r = 0xff, .g = 0xff, .b = 0xff, .a = 0xff };
+    for (hitbox.getLines()) |line| {
+        const p1 = utils.Point{
+            .x = switch (line.function.mainAxis) {
+                .X => line.points[0].x,
+                .Y => line.function.calc(line.points[0].y),
+            },
+            .y = switch (line.function.mainAxis) {
+                .X => line.function.calc(line.points[0].x),
+                .Y => line.points[0].y,
+            },
+        };
+
+        const p2 = utils.Point{
+            .x = switch (line.function.mainAxis) {
+                .X => line.points[1].x,
+                .Y => line.function.calc(line.points[1].y),
+            },
+            .y = switch (line.function.mainAxis) {
+                .X => line.function.calc(line.points[1].x),
+                .Y => line.points[1].y,
+            },
+        };
+        render.drawLineP(p1, p2, colorPoint);
+    }
+}
+
+fn drawPointHitbox(render: Render, center: utils.Point, size: utils.Point) void {
+    const rect = utils.Rectangle{
+        .x = center.x + size.x,
+        .y = center.y + size.y / 2,
+        .w = size.x,
+        .h = size.y,
+    };
+    drawHitbox(render, HitBox.new(rect));
 }
