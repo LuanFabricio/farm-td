@@ -81,6 +81,7 @@ pub const Turret = struct {
             ShootTarget.spam,
             self.entity.status.attack,
             -75.0,
+            projectileImport.PROJECTILE_SPAM_LIFETIME_MS,
         );
     }
 
@@ -90,6 +91,7 @@ pub const Turret = struct {
             ShootTarget{ .follow = target },
             self.entity.status.attack,
             -75.0,
+            projectileImport.PROJECTILE_FOLLOW_LIFETIME_MS,
         );
     }
 

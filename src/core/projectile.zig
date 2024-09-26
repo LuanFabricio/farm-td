@@ -7,7 +7,8 @@ const HitBox = @import("collision/hitbox.zig").HitBox;
 const Enemy = @import("enemy.zig").Enemy;
 const Entity = @import("entity.zig").Entity;
 
-pub const PROJECTILE_FILETIME_MS: i64 = 30 * 1000;
+pub const PROJECTILE_FOLLOW_LIFETIME_MS: i64 = 30 * 1000;
+pub const PROJECTILE_SPAM_LIFETIME_MS: i64 = 10 * 1000;
 
 pub const PROJECTILE_DEFAULT_COLOR = utils.Color{
     .r = 0xff,
@@ -34,13 +35,13 @@ pub const Projectile = struct {
     shootTarget: ShootTarget,
     expirationTime: i64,
 
-    pub fn new(hitbox: HitBox, shootTarget: ShootTarget, damage: i32, speed: f32) This {
+    pub fn new(hitbox: HitBox, shootTarget: ShootTarget, damage: i32, speed: f32, lifetimeMs: i64) This {
         return This{
             .hitbox = hitbox,
             .shootTarget = shootTarget,
             .speed = speed,
             .damage = damage,
-            .expirationTime = timestamp() + PROJECTILE_FILETIME_MS,
+            .expirationTime = timestamp() + lifetimeMs,
         };
     }
 
