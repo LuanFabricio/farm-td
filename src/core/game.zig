@@ -267,16 +267,17 @@ pub const Game = struct {
             for (self.turretGrid.items.items, 0..) |turretOption, idx| {
                 if (turretOption == null) continue;
 
-                var turretPosition = self.turretGrid.indexToXY(idx);
-                turretPosition.x = turretPosition.x * gridSize + turretOffset.x;
-                turretPosition.y = turretPosition.y * gridSize + turretOffset.y;
-                turretPosition.x += turretImport.TURRET_SIZE.x;
-                turretPosition.y += turretImport.TURRET_SIZE.y;
+                const turretPoint = self.turretGrid.indexToXY(idx);
+                const turretPosition = self.turretGrid.gridToWorld(
+                    turretPoint,
+                    turretOffset,
+                    @as(usize, @intFromFloat(gridSize)),
+                );
 
                 const enemyHitbox = HitBox.new(enemy.box);
                 const turretRect = utils.Rectangle{
-                    .x = turretPosition.x,
-                    .y = turretPosition.y,
+                    .x = turretPosition.x + turretImport.TURRET_SIZE.x,
+                    .y = turretPosition.y + turretImport.TURRET_SIZE.y / 2,
                     .w = turretImport.TURRET_SIZE.x,
                     .h = turretImport.TURRET_SIZE.y,
                 };
