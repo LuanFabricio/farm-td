@@ -94,18 +94,16 @@ pub const EnemySpawner = struct {
     baseBox: utils.Rectangle,
 
     pub fn new(delay: i64, baseBox: utils.Rectangle) EnemySpawner {
-        var self = EnemySpawner{
+        return EnemySpawner{
             .delay = Delay.new(delay, false),
             .baseBox = baseBox,
         };
-        self.delay.isRandom = true;
-        return self;
     }
 
     pub fn spawn(self: *EnemySpawner) !?*Enemy {
         if (self.delay.onCooldown()) return null;
 
-        self.delay.applyDelay();
+        self.delay.applyDelayWithRand([2]i64{ -2500, 150 });
         return try Enemy.init(self.baseBox);
     }
 };

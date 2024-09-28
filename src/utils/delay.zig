@@ -6,14 +6,12 @@ pub const Delay = struct {
     const This = @This();
     delay: i64,
     timer: i64,
-    isRandom: bool,
 
     pub fn new(delay: i64, startOnCooldown: bool) This {
         const now = timestamp();
         return This{
             .delay = delay,
             .timer = now + if (startOnCooldown) delay else 0,
-            .isRandom = false,
         };
     }
 
@@ -25,8 +23,10 @@ pub const Delay = struct {
     pub fn applyDelay(self: *This) void {
         const now = timestamp();
         self.timer = now + self.delay;
-        if (self.isRandom) {
-            self.timer += rand.intRangeAtMost(i64, -2500, 150);
-        }
+    }
+
+    pub fn applyDelayWithRand(self: *This, range: [2]i64) void {
+        self.applyDelay();
+        self.timer += rand.intRangeAtMost(i64, range[0], range[1]);
     }
 };
