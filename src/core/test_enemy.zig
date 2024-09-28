@@ -47,7 +47,7 @@ test "Should spawn an enemy and update the spawnTime" {
         .w = 42,
         .h = 42,
     };
-    var spawner = EnemySpawner.new(15, baseBox);
+    var spawner = EnemySpawner.new(1500000, baseBox);
     const oldAttackTime = spawner.delay.timer;
 
     const e = try spawner.spawn();
