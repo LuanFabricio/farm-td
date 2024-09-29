@@ -47,3 +47,24 @@ test "applyDelay should set timer propertie to be now plus delay" {
     someDelay.applyDelay();
     try expect(someDelay.timer > now);
 }
+
+test "applyDelayWithRand should use an range" {
+    const delay = 60 * 1000;
+    var delay1 = Delay.new(delay, false);
+
+    const now1 = timestamp();
+    try expect(delay1.timer <= now1);
+
+    const range1 = [2]i64{ 10, 1000 };
+    delay1.applyDelayWithRand(range1);
+    try expect(delay1.timer > now1);
+
+    var delay2 = Delay.new(delay, false);
+
+    const now2 = timestamp();
+    try expect(delay2.timer <= now2);
+
+    const range2 = [2]i64{ -delay, -delay };
+    delay2.applyDelayWithRand(range2);
+    try expect(delay2.timer <= now2);
+}
