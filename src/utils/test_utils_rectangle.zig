@@ -53,6 +53,20 @@ test "It should get the center" {
     try expect(center.y == expectedCenter.y);
 }
 
+test "It should get the size" {
+    const rectangle = Rectangle{
+        .x = 0,
+        .y = 0,
+        .w = 32,
+        .h = 32,
+    };
+
+    const expectedSize = utils.Point{ .x = 32, .y = 32 };
+    const size = rectangle.getSize();
+    try expect(expectedSize.x == size.x);
+    try expect(expectedSize.y == size.y);
+}
+
 test "It should get the rectangle points" {
     const r = Rectangle{ .x = 8, .y = 16, .w = 4, .h = 8 };
 
@@ -93,4 +107,19 @@ test "It should be created by two points" {
     try expect(r.y == 0);
     try expect(r.w == 10);
     try expect(r.h == 10);
+}
+
+test "It should check if contains a point" {
+    const rectangle = Rectangle{
+        .x = 32,
+        .y = 32,
+        .w = 64,
+        .h = 64,
+    };
+
+    const point1 = utils.Point{ .x = rectangle.x + 10, .y = rectangle.y + 10 };
+    try expect(rectangle.containsPoint(point1));
+
+    const point2 = utils.Point{ .x = -100, .y = -100 };
+    try expect(rectangle.containsPoint(point2) == false);
 }
